@@ -30,6 +30,9 @@ namespace DATN
             InitializeComponent();
             _testCases = new List<TestCase>(); //Khởi tạo danh sách test case
 
+            // Gán sự kiện SelectedIndexChanged cho comboboxUC
+            comboboxUC.SelectedIndexChanged += new EventHandler(ComboBoxUseCases_SelectedIndexChanged);
+
         }
 
         //lớp test case để lưu thông tin test case
@@ -76,32 +79,133 @@ namespace DATN
         private void LoadXmlAndUseCases(string xmlFilePath)
         {
 
+            //try
+            //{
+            //    _selectedFilePath = xmlFilePath; // Lưu đường dẫn file XML
+            //    xmlDoc = XDocument.Load(xmlFilePath); // Tải file XML
+            //                                          // Lấy danh sách Use Case từ file XML
+            //    var useCases = xmlDoc.Descendants("UseCase")
+            //        .Where(uc => uc.Attribute("Id") != null)
+            //        .Select(uc => new { Id = uc.Attribute("Id").Value, Name = uc.Attribute("Name").Value })
+            //        .ToList();
+
+            //    txtInputTM.Clear(); // Xóa nội dung cũ trong TextBox
+            //                        // Hiển thị toàn bộ đường dẫn thư mục chứa file XML
+            //    string directoryPath = Path.GetDirectoryName(_selectedFilePath); // Lấy đường dẫn thư mục
+            //    txtInputTM.AppendText(directoryPath); // Hiển thị toàn bộ đường dẫn thư mục (giống txtOutputTM)
+
+            //    // Tự động chọn Use Case đầu tiên (ngầm)
+            //    if (useCases.Count > 0)
+            //    {
+            //        var firstUseCase = useCases.First(); // Chọn Use Case đầu tiên
+            //        selectedUseCaseId = firstUseCase.Id; // Lưu ID của Use Case đầu tiên
+            //                                             // Không hiển thị thông báo để hoàn toàn ngầm
+            //    }
+            //    else
+            //    {
+            //        txtThongbao.AppendText("Không tìm thấy Use Case trong file XML!\r\n");
+            //        selectedUseCaseId = null; // Đặt lại nếu không có Use Case
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi tải file XML: {ex.Message}\r\n");
+            //}
+
+
+            //đẩy dlieu xml lên combobox để chọn tên use case sinh test
+            //try
+            //{
+            //    _selectedFilePath = xmlFilePath; // Lưu đường dẫn file XML
+            //    xmlDoc = XDocument.Load(xmlFilePath); // Tải file XML
+
+            //    // Lấy danh sách Use Case từ file XML và loại bỏ trùng lặp dựa trên Name
+            //    var useCases = xmlDoc.Descendants("UseCase")
+            //        .Where(uc => uc.Attribute("Id") != null)
+            //        .Select(uc => new UseCase
+            //        {
+            //            Id = uc.Attribute("Id").Value,
+            //            Name = uc.Attribute("Name").Value
+            //        })
+            //        .GroupBy(uc => uc.Name) // Nhóm theo Name để loại bỏ trùng lặp
+            //        .Select(g => g.First()) // Chọn mục đầu tiên trong mỗi nhóm
+            //        .OrderBy(uc => uc.Name) // Sắp xếp theo Name
+            //        .ToList();
+
+            //    // Xóa nội dung cũ trong TextBox
+            //    txtInputTM.Clear();
+            //    // Hiển thị toàn bộ đường dẫn thư mục chứa file XML
+            //    string directoryPath = Path.GetDirectoryName(_selectedFilePath);
+            //    txtInputTM.AppendText(directoryPath);
+
+            //    // Hiển thị danh sách Use Case trong ComboBox
+            //    comboboxUC.Items.Clear(); // Xóa các mục cũ
+            //    comboboxUC.Items.AddRange(useCases.ToArray()); // Thêm danh sách use case
+            //    comboboxUC.DisplayMember = "Name"; // Hiển thị thuộc tính Name
+            //    comboboxUC.ValueMember = "Id"; // Lưu trữ giá trị Id
+
+            //    // Đặt lại selectedUseCaseId và không chọn mặc định
+            //    selectedUseCaseId = null;
+            //    comboboxUC.SelectedIndex = -1; // Không chọn mục nào mặc định
+
+            //    if (useCases.Count > 0)
+            //    {
+            //        txtThongbao.AppendText("Đã tải danh sách Use Case. Vui lòng chọn Use Case để sinh test case.\r\n");
+            //    }
+            //    else
+            //    {
+            //        txtThongbao.AppendText("Không tìm thấy Use Case trong file XML!\r\n");
+            //        selectedUseCaseId = null;
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi tải file XML: {ex.Message}\r\n");
+            //}
+
+
             try
             {
                 _selectedFilePath = xmlFilePath; // Lưu đường dẫn file XML
                 xmlDoc = XDocument.Load(xmlFilePath); // Tải file XML
-                                                      // Lấy danh sách Use Case từ file XML
+
+                // Lấy danh sách Use Case từ file XML và loại bỏ trùng lặp dựa trên Name
                 var useCases = xmlDoc.Descendants("UseCase")
                     .Where(uc => uc.Attribute("Id") != null)
-                    .Select(uc => new { Id = uc.Attribute("Id").Value, Name = uc.Attribute("Name").Value })
+                    .Select(uc => new UseCase
+                    {
+                        Id = uc.Attribute("Id").Value,
+                        Name = uc.Attribute("Name").Value
+                    })
+                    .GroupBy(uc => uc.Name) // Nhóm theo Name để loại bỏ trùng lặp
+                    .Select(g => g.First()) // Chọn mục đầu tiên trong mỗi nhóm
+                    .OrderBy(uc => uc.Name) // Sắp xếp theo Name
                     .ToList();
 
-                txtInputTM.Clear(); // Xóa nội dung cũ trong TextBox
-                                    // Hiển thị toàn bộ đường dẫn thư mục chứa file XML
-                string directoryPath = Path.GetDirectoryName(_selectedFilePath); // Lấy đường dẫn thư mục
-                txtInputTM.AppendText(directoryPath); // Hiển thị toàn bộ đường dẫn thư mục (giống txtOutputTM)
+                // Xóa nội dung cũ trong TextBox
+                txtInputTM.Clear();
+                // Hiển thị toàn bộ đường dẫn thư mục chứa file XML
+                string directoryPath = Path.GetDirectoryName(_selectedFilePath);
+                txtInputTM.AppendText(directoryPath);
 
-                // Tự động chọn Use Case đầu tiên (ngầm)
+                // Hiển thị danh sách Use Case trong ComboBox
+                comboboxUC.Items.Clear(); // Xóa các mục cũ
+                comboboxUC.Items.AddRange(useCases.ToArray()); // Thêm danh sách use case
+                comboboxUC.DisplayMember = "Name"; // Hiển thị thuộc tính Name
+                comboboxUC.ValueMember = "Id"; // Lưu trữ giá trị Id
+
+                // Đặt lại selectedUseCaseId và không chọn mặc định
+                selectedUseCaseId = null;
+                comboboxUC.SelectedIndex = -1; // Không chọn mục nào mặc định
+
                 if (useCases.Count > 0)
                 {
-                    var firstUseCase = useCases.First(); // Chọn Use Case đầu tiên
-                    selectedUseCaseId = firstUseCase.Id; // Lưu ID của Use Case đầu tiên
-                                                         // Không hiển thị thông báo để hoàn toàn ngầm
+                    txtThongbao.AppendText("Đã tải danh sách Use Case. Vui lòng chọn Use Case để sinh test case.\r\n");
                 }
                 else
                 {
                     txtThongbao.AppendText("Không tìm thấy Use Case trong file XML!\r\n");
-                    selectedUseCaseId = null; // Đặt lại nếu không có Use Case
+                    selectedUseCaseId = null;
                 }
             }
             catch (Exception ex)
@@ -359,8 +463,6 @@ namespace DATN
 
         private void btnInput_Click(object sender, EventArgs e)
         {
-
-            
             using (var openFileDialog = new OpenFileDialog())
             {
                 // Thiết lập thư mục mặc định
@@ -418,7 +520,10 @@ namespace DATN
                         txtThongbao.AppendText("Chức năng xử lý file XMI chưa được triển khai.\r\n");
                     }
                 }
-            }        
+            }
+
+
+            
         }
 
         private void btnOutput_Click(object sender, EventArgs e)
@@ -442,10 +547,242 @@ namespace DATN
             }
         }
 
+        //đảm bảo người dùng chọn 1 cá sử dụng trong combobox
+        private void ComboBoxUseCases_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboboxUC.SelectedIndex > -1) // Kiểm tra xem có mục nào được chọn không
+            {
+                selectedUseCaseId = comboboxUC.SelectedValue?.ToString(); // Lấy giá trị Id từ SelectedValue
+                if (!string.IsNullOrEmpty(selectedUseCaseId))
+                {
+                    var selectedUseCase = comboboxUC.SelectedItem as UseCase;
+                    txtThongbao.AppendText($"Đã chọn Use Case: {selectedUseCase?.Name}, ID: {selectedUseCaseId}\r\n");
+                }
+                else
+                {
+                    selectedUseCaseId = null;
+                    txtThongbao.AppendText("Không lấy được ID của Use Case!\r\n");
+                }
+            }
+            else
+            {
+                selectedUseCaseId = null;
+            }
+        }
+
+
         // Hàm sinh test case từ file XML và lưu vào danh sách _testCases
         private void GenerateTestCases()
         {
-            
+
+            //try
+            //{
+            //    _testCases.Clear(); // Xóa danh sách test case cũ
+            //    txtThongbao.Clear(); // Xóa nội dung cũ trong txtThongbao
+
+            //    // Tìm Use Case trong file XML dựa trên ID
+            //    var useCase = xmlDoc.Descendants("UseCase")
+            //        .FirstOrDefault(uc => uc.Attribute("Id")?.Value == selectedUseCaseId);
+
+            //    if (useCase == null)
+            //    {
+            //        txtThongbao.AppendText("Không tìm thấy Use Case!\r\n");
+            //        return;
+            //    }
+
+            //    string useCaseName = useCase.Attribute("Id")?.Value ?? "UC-Unknown"; // Dùng Id làm UseCase (ví dụ: UC-1.1)
+
+            //    // Lấy thông tin Preconditions và Post-conditions
+            //    var taggedValues = useCase.Element("TaggedValues")?.Element("TaggedValueContainer")?.Elements("TaggedValue");
+            //    var preconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Preconditions")?.Attribute("Value")?.Value ?? "";
+            //    var postconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Post-conditions")?.Attribute("Value")?.Value ?? "";
+
+            //    // Lấy các bước (Steps) và Testing Procedures
+            //    var steps = useCase.Element("StepContainers")?.Element("StepContainer")?.Element("Steps")?.Elements("Step");
+            //    int stepNumber = 1;
+            //    int testCaseCounter = 1; // Đếm để tạo Test Case ID (TC-01, TC-02, v.v.)
+
+            //    if (steps == null)
+            //    {
+            //        txtThongbao.AppendText("Không tìm thấy bước nào trong Use Case!\r\n");
+            //        return;
+            //    }
+
+            //    foreach (var step in steps)
+            //    {
+            //        string stepName = step.Attribute("Name")?.Value ?? $"Step {stepNumber}";
+
+            //        // Lấy Testing Procedures của bước
+            //        var testingProcedures = step.Element("TestingProcedures")?.Elements("TestingProcedure");
+            //        if (testingProcedures != null)
+            //        {
+            //            foreach (var tp in testingProcedures)
+            //            {
+            //                string tpName = $"TC-{testCaseCounter:D2}"; // Tạo Test Case ID dạng TC-01, TC-02, v.v.
+
+            //                // Kiểm tra xem Procedure và ExpectedResults có tồn tại và không bị đánh dấu là null
+            //                string procedure = tp.Attribute("Procedure_IsNull")?.Value != "true" ? (tp.Element("Procedure")?.Value ?? $"Step {stepNumber}: {stepName}") : $"Step {stepNumber}: {stepName}";
+            //                string expectedResults = tp.Attribute("ExpectedResults_IsNull")?.Value != "true" ? (tp.Element("ExpectedResults")?.Value ?? "Hệ thống xử lý thành công") : "Hệ thống xử lý thành công";
+
+            //                // Sửa Expected Result mơ hồ
+            //                if (string.IsNullOrEmpty(expectedResults) || expectedResults == "Hệ thống xử lý thông tin đăng nhập")
+            //                {
+            //                    expectedResults = "Hệ thống chuyển hướng đến trang thông tin tài khoản";
+            //                }
+            //                else if (expectedResults == "Hệ thống xử lý yêu cầu đặt lại mật khẩu")
+            //                {
+            //                    expectedResults = "Hệ thống gửi email chứa liên kết đặt lại mật khẩu";
+            //                }
+
+            //                // Tạo một TestCase và thêm vào danh sách _testCases
+            //                var testCase = new TestCase
+            //                {
+            //                    UseCase = useCaseName,
+            //                    Step = $"Step {stepNumber}",
+            //                    TestName = tpName,
+            //                    Preconditions = preconditions,
+            //                    Procedure = procedure,
+            //                    ExpectedResults = expectedResults,
+            //                    Postconditions = postconditions
+            //                };
+            //                _testCases.Add(testCase);
+            //                testCaseCounter++;
+            //            }
+            //        }
+
+            //        // Kiểm tra các bước con (Sub-steps) nếu có
+            //        var subSteps = step.Element("SubSteps")?.Elements("Step");
+            //        if (subSteps != null)
+            //        {
+            //            int subStepNumber = 1;
+            //            foreach (var subStep in subSteps)
+            //            {
+            //                string subStepName = subStep.Attribute("Name")?.Value ?? $"Sub-step {subStepNumber}";
+
+            //                var subTestingProcedures = subStep.Element("TestingProcedures")?.Elements("TestingProcedure");
+            //                if (subTestingProcedures != null)
+            //                {
+            //                    foreach (var subTp in subTestingProcedures)
+            //                    {
+            //                        string subTpName = $"TC-{testCaseCounter:D2}";
+            //                        string subProcedure = subTp.Attribute("Procedure_IsNull")?.Value != "true" ? (subTp.Element("Procedure")?.Value ?? $"Sub-step {stepNumber}.{subStepNumber}: {subStepName}") : $"Sub-step {stepNumber}.{subStepNumber}: {subStepName}";
+            //                        string subExpectedResults = subTp.Attribute("ExpectedResults_IsNull")?.Value != "true" ? (subTp.Element("ExpectedResults")?.Value ?? "Hệ thống xử lý thành công") : "Hệ thống xử lý thành công";
+
+            //                        // Sửa Expected Result mơ hồ
+            //                        if (string.IsNullOrEmpty(subExpectedResults) || subExpectedResults == "Hệ thống xử lý thông tin đăng nhập")
+            //                        {
+            //                            subExpectedResults = "Hệ thống chuyển hướng đến trang thông tin tài khoản";
+            //                        }
+            //                        else if (subExpectedResults == "Hệ thống xử lý yêu cầu đặt lại mật khẩu")
+            //                        {
+            //                            subExpectedResults = "Hệ thống gửi email chứa liên kết đặt lại mật khẩu";
+            //                        }
+
+            //                        // Tạo một TestCase cho Sub-step
+            //                        var testCase = new TestCase
+            //                        {
+            //                            UseCase = useCaseName,
+            //                            Step = $"Sub-step {stepNumber}.{subStepNumber}",
+            //                            TestName = subTpName,
+            //                            Preconditions = preconditions,
+            //                            Procedure = subProcedure,
+            //                            ExpectedResults = subExpectedResults,
+            //                            Postconditions = postconditions
+            //                        };
+            //                        _testCases.Add(testCase);
+            //                        testCaseCounter++;
+            //                    }
+            //                }
+            //                subStepNumber++;
+            //            }
+            //        }
+
+            //        // Kiểm tra Extensions (luồng phụ như Quên mật khẩu)
+            //        var extensions = step.Element("Extensions")?.Elements("Extension");
+            //        if (extensions != null)
+            //        {
+            //            Dictionary<string, TestCase> extensionTestCases = new Dictionary<string, TestCase>(); // Để kiểm tra trùng lặp
+
+            //            foreach (var extension in extensions)
+            //            {
+            //                string extName = extension.Attribute("Name")?.Value ?? "Unnamed Extension";
+            //                var extSteps = extension.Element("SubSteps")?.Elements("Step");
+            //                int extStepNumber = 1;
+
+            //                if (extSteps != null)
+            //                {
+            //                    foreach (var extStep in extSteps)
+            //                    {
+            //                        string extStepName = extStep.Attribute("Name")?.Value ?? $"Ext Step {extStepNumber}";
+            //                        var extTestingProcedures = extStep.Element("TestingProcedures")?.Elements("TestingProcedure");
+
+            //                        if (extTestingProcedures != null)
+            //                        {
+            //                            foreach (var extTp in extTestingProcedures)
+            //                            {
+            //                                string extTpName = $"TC-{testCaseCounter:D2}";
+            //                                string extProcedure = extTp.Attribute("Procedure_IsNull")?.Value != "true" ? (extTp.Element("Procedure")?.Value ?? $"Extension {extName} - Step {extStepNumber}: {extStepName}") : $"Extension {extName} - Step {extStepNumber}: {extStepName}";
+            //                                string extExpectedResults = extTp.Attribute("ExpectedResults_IsNull")?.Value != "true" ? (extTp.Element("ExpectedResults")?.Value ?? "Hệ thống xử lý thành công") : "Hệ thống xử lý thành công";
+
+            //                                // Sửa Expected Result mơ hồ
+            //                                if (string.IsNullOrEmpty(extExpectedResults) || extExpectedResults == "Hệ thống xử lý thông tin đăng nhập")
+            //                                {
+            //                                    extExpectedResults = "Hệ thống chuyển hướng đến trang thông tin tài khoản";
+            //                                }
+            //                                else if (extExpectedResults == "Hệ thống xử lý yêu cầu đặt lại mật khẩu")
+            //                                {
+            //                                    extExpectedResults = "Hệ thống gửi email chứa liên kết đặt lại mật khẩu";
+            //                                }
+
+            //                                // Kiểm tra trùng lặp dựa trên Procedure và Expected Result
+            //                                string key = extProcedure + extExpectedResults;
+            //                                if (!extensionTestCases.ContainsKey(key))
+            //                                {
+            //                                    var testCase = new TestCase
+            //                                    {
+            //                                        UseCase = useCaseName,
+            //                                        Step = $"Extension {extName} - Step {extStepNumber}",
+            //                                        TestName = extTpName,
+            //                                        Preconditions = preconditions,
+            //                                        Procedure = extProcedure,
+            //                                        ExpectedResults = extExpectedResults,
+            //                                        Postconditions = postconditions
+            //                                    };
+            //                                    extensionTestCases[key] = testCase;
+            //                                    _testCases.Add(testCase);
+            //                                    testCaseCounter++;
+            //                                }
+            //                            }
+            //                        }
+            //                        extStepNumber++;
+            //                    }
+            //                }
+            //            }
+            //        }
+
+            //        stepNumber++;
+            //    }
+
+
+            //    // Loại bỏ test case trống
+            //    _testCases.RemoveAll(tc => string.IsNullOrEmpty(tc.Procedure) && string.IsNullOrEmpty(tc.ExpectedResults));
+
+            //    if (_testCases.Count == 0)
+            //    {
+            //        txtThongbao.AppendText("Không sinh được test case nào từ Use Case!\r\n");
+            //    }
+            //    else
+            //    {
+            //        txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case từ Use Case!\r\n");
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi sinh test case: {ex.Message}\r\n");
+            //}
+
+
+            //SINH TC
             try
             {
                 _testCases.Clear(); // Xóa danh sách test case cũ
@@ -461,200 +798,700 @@ namespace DATN
                     return;
                 }
 
-                string useCaseName = useCase.Attribute("Id").Value; // Dùng Id làm UseCase (ví dụ: UC-1.1)
+                string useCaseName = useCase.Attribute("Name")?.Value ?? "Unknown Use Case"; // Lấy tên Use Case (ví dụ: 1.1. Đăng nhập)
+                string useCaseId = useCase.Attribute("Id")?.Value ?? "UC-Unknown"; // Lưu Id để sử dụng nếu cần
 
                 // Lấy thông tin Preconditions và Post-conditions
                 var taggedValues = useCase.Element("TaggedValues")?.Element("TaggedValueContainer")?.Elements("TaggedValue");
-                var preconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Preconditions")?.Attribute("Value")?.Value;
-                var postconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Post-conditions")?.Attribute("Value")?.Value;
+                var preconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Preconditions")?.Attribute("Value")?.Value ?? "";
+                var postconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Post-conditions")?.Attribute("Value")?.Value ?? "";
 
-                // Lấy các bước (Steps) và Testing Procedures
-                var steps = useCase.Element("StepContainers")?.Element("StepContainer")?.Element("Steps")?.Elements("Step");
-                int stepNumber = 1;
-                int testCaseCounter = 1; // Đếm để tạo Test Case ID (TC-01, TC-02, v.v.)
+                // Lấy các bước (Steps)
+                var stepContainer = useCase.Element("StepContainers")?.Element("StepContainer");
+                var steps = stepContainer?.Element("Steps")?.Elements("Step");
+                if (steps == null)
+                {
+                    txtThongbao.AppendText("Không tìm thấy bước nào trong Use Case!\r\n");
+                    return;
+                }
+
+                int tcCounter = 1; // Đếm để tạo Test Case ID (TC-01, TC-02, ...)
+
+                // Tạo danh sách các luồng
+                List<List<string>> mediumFlows = new List<List<string>>();
+                List<List<string>> googleFlows = new List<List<string>>();
+                List<List<string>> facebookFlows = new List<List<string>>();
+                List<(string ExtName, List<string> ExtSteps)> extensionFlows = new List<(string, List<string>)>();
+
+                // Phân loại các bước vào từng luồng
+                List<string> currentMediumFlow = new List<string>();
+                List<string> currentGoogleFlow = new List<string>();
+                List<string> currentFacebookFlow = new List<string>();
+                bool isMediumFlow = false, isGoogleFlow = false, isFacebookFlow = false;
 
                 foreach (var step in steps)
                 {
-                    string stepName = step.Attribute("Name").Value;
+                    string stepName = step.Attribute("Name")?.Value ?? $"Step {mediumFlows.Count + googleFlows.Count + facebookFlows.Count + 1}";
 
-                    // Lấy Testing Procedures của bước
-                    var testingProcedures = step.Element("TestingProcedures")?.Elements("TestingProcedure");
-                    if (testingProcedures != null)
+                    // Bước chung: "Người dùng truy cập ứng dụng Medium"
+                    if (stepName.ToLower().Contains("truy cập ứng dụng"))
                     {
-                        foreach (var tp in testingProcedures)
-                        {
-                            string tpName = $"TC-{testCaseCounter:D2}"; // Tạo Test Case ID dạng TC-01, TC-02, v.v.
-                            string procedure = tp.Element("Procedure")?.Value;
-                            string expectedResults = tp.Element("ExpectedResults")?.Value;
+                        if (currentMediumFlow.Any()) mediumFlows.Add(new List<string>(currentMediumFlow));
+                        if (currentGoogleFlow.Any()) googleFlows.Add(new List<string>(currentGoogleFlow));
+                        if (currentFacebookFlow.Any()) facebookFlows.Add(new List<string>(currentFacebookFlow));
 
-                            // Bổ sung chi tiết Procedure nếu cần
-                            if (string.IsNullOrEmpty(procedure))
-                            {
-                                procedure = $"Step {stepNumber}: {stepName}"; // Đặt mặc định nếu Procedure trống
-                            }
-
-                            // Sửa Expected Result mơ hồ
-                            if (string.IsNullOrEmpty(expectedResults) || expectedResults == "Hệ thống xử lý thông tin đăng nhập")
-                            {
-                                expectedResults = "Hệ thống chuyển hướng đến trang thông tin tài khoản";
-                            }
-                            else if (expectedResults == "Hệ thống xử lý yêu cầu đặt lại mật khẩu")
-                            {
-                                expectedResults = "Hệ thống gửi email chứa liên kết đặt lại mật khẩu";
-                            }
-
-                            // Tạo một TestCase và thêm vào danh sách _testCases
-                            var testCase = new TestCase
-                            {
-                                UseCase = useCaseName,
-                                Step = $"Step {stepNumber}",
-                                TestName = tpName,
-                                Preconditions = preconditions,
-                                Procedure = procedure,
-                                ExpectedResults = expectedResults,
-                                Postconditions = postconditions
-                            };
-                            _testCases.Add(testCase);
-                            testCaseCounter++;
-                        }
+                        currentMediumFlow = new List<string> { stepName };
+                        currentGoogleFlow = new List<string> { stepName };
+                        currentFacebookFlow = new List<string> { stepName };
+                        isMediumFlow = isGoogleFlow = isFacebookFlow = false;
+                        continue;
                     }
 
-                    // Kiểm tra các bước con (Sub-steps) nếu có
-                    var subSteps = step.Element("Steps")?.Elements("Step");
-                    if (subSteps != null)
+                    // Xác định luồng dựa trên nội dung bước
+                    if (stepName.ToLower().Contains("chọn phương thức đăng nhập bằng tài khoản medium"))
                     {
-                        int subStepNumber = 1;
-                        foreach (var subStep in subSteps)
-                        {
-                            string subStepName = subStep.Attribute("Name").Value;
-
-                            var subTestingProcedures = subStep.Element("TestingProcedures")?.Elements("TestingProcedure");
-                            if (subTestingProcedures != null)
-                            {
-                                foreach (var subTp in subTestingProcedures)
-                                {
-                                    string subTpName = $"TC-{testCaseCounter:D2}";
-                                    string subProcedure = subTp.Element("Procedure")?.Value;
-                                    string subExpectedResults = subTp.Element("ExpectedResults")?.Value;
-
-                                    // Bổ sung chi tiết Procedure
-                                    if (string.IsNullOrEmpty(subProcedure))
-                                    {
-                                        subProcedure = $"Sub-step {stepNumber}.{subStepNumber}: {subStepName}";
-                                    }
-
-                                    // Sửa Expected Result mơ hồ
-                                    if (string.IsNullOrEmpty(subExpectedResults) || subExpectedResults == "Hệ thống xử lý thông tin đăng nhập")
-                                    {
-                                        subExpectedResults = "Hệ thống chuyển hướng đến trang thông tin tài khoản";
-                                    }
-                                    else if (subExpectedResults == "Hệ thống xử lý yêu cầu đặt lại mật khẩu")
-                                    {
-                                        subExpectedResults = "Hệ thống gửi email chứa liên kết đặt lại mật khẩu";
-                                    }
-
-                                    // Tạo một TestCase cho Sub-step
-                                    var testCase = new TestCase
-                                    {
-                                        UseCase = useCaseName,
-                                        Step = $"Sub-step {stepNumber}.{subStepNumber}",
-                                        TestName = subTpName,
-                                        Preconditions = preconditions,
-                                        Procedure = subProcedure,
-                                        ExpectedResults = subExpectedResults,
-                                        Postconditions = postconditions
-                                    };
-                                    _testCases.Add(testCase);
-                                    testCaseCounter++;
-                                }
-                            }
-                            subStepNumber++;
-                        }
+                        isMediumFlow = true;
+                        isGoogleFlow = isFacebookFlow = false;
+                        currentMediumFlow.Add(stepName);
+                    }
+                    else if (stepName.ToLower().Contains("chọn phương thức đăng nhập bằng tài khoản google"))
+                    {
+                        isGoogleFlow = true;
+                        isMediumFlow = isFacebookFlow = false;
+                        currentGoogleFlow.Add(stepName);
+                    }
+                    else if (stepName.ToLower().Contains("chọn phương thức đăng nhập bằng tài khoản facebook"))
+                    {
+                        isFacebookFlow = true;
+                        isMediumFlow = isGoogleFlow = false;
+                        currentFacebookFlow.Add(stepName);
+                    }
+                    else if (stepName.ToLower().Contains("google xác thực"))
+                    {
+                        currentGoogleFlow.Add(stepName);
+                    }
+                    else if (stepName.ToLower().Contains("facebook xác thực"))
+                    {
+                        currentFacebookFlow.Add(stepName);
+                    }
+                    else if (stepName.ToLower().Contains("nhập tài khoản medium") || stepName.ToLower().Contains("hệ thống xác thực thông tin đăng nhập"))
+                    {
+                        currentMediumFlow.Add(stepName);
                     }
 
-                    // Kiểm tra Extensions (luồng phụ như Quên mật khẩu)
+                    // Kiểm tra Extensions (luồng phụ)
                     var extensions = step.Element("Extensions")?.Elements("Extension");
-                    if (extensions != null)
+                    if (extensions != null && extensions.Any())
                     {
-                        Dictionary<string, TestCase> extensionTestCases = new Dictionary<string, TestCase>(); // Để kiểm tra trùng lặp
-
                         foreach (var extension in extensions)
                         {
-                            string extName = extension.Attribute("Name").Value;
+                            string extName = extension.Attribute("Name")?.Value ?? "Unnamed Extension";
+                            List<string> extSteps = new List<string>();
 
-                            var extSteps = extension.Element("StepContainers")?.Elements("Step");
-                            int extStepNumber = 1;
-                            foreach (var extStep in extSteps)
+                            // Thêm các bước trước đó của Medium Flow vào Extension
+                            extSteps.AddRange(currentMediumFlow);
+
+                            // Lấy các bước của Extension
+                            var extStepElements = extension.Element("Steps")?.Elements("Step");
+                            if (extStepElements != null)
                             {
-                                string extStepName = extStep.Attribute("Name").Value;
-
-                                var extTestingProcedures = extStep.Element("TestingProcedures")?.Elements("TestingProcedure");
-                                if (extTestingProcedures != null)
+                                foreach (var extStep in extStepElements)
                                 {
-                                    foreach (var extTp in extTestingProcedures)
+                                    string extStepName = extStep.Attribute("Name")?.Value ?? "";
+                                    if (!string.IsNullOrEmpty(extStepName))
                                     {
-                                        string extTpName = $"TC-{testCaseCounter:D2}";
-                                        string extProcedure = extTp.Element("Procedure")?.Value;
-                                        string extExpectedResults = extTp.Element("ExpectedResults")?.Value;
-
-                                        // Bổ sung chi tiết Procedure
-                                        if (string.IsNullOrEmpty(extProcedure))
-                                        {
-                                            extProcedure = $"Extension {extName} - Step {extStepNumber}: {extStepName}";
-                                        }
-
-                                        // Sửa Expected Result mơ hồ
-                                        if (string.IsNullOrEmpty(extExpectedResults) || extExpectedResults == "Hệ thống xử lý thông tin đăng nhập")
-                                        {
-                                            extExpectedResults = "Hệ thống chuyển hướng đến trang thông tin tài khoản";
-                                        }
-                                        else if (extExpectedResults == "Hệ thống xử lý yêu cầu đặt lại mật khẩu")
-                                        {
-                                            extExpectedResults = "Hệ thống gửi email chứa liên kết đặt lại mật khẩu";
-                                        }
-
-                                        // Kiểm tra trùng lặp dựa trên Procedure và Expected Result
-                                        string key = extProcedure + extExpectedResults;
-                                        if (!extensionTestCases.ContainsKey(key))
-                                        {
-                                            var testCase = new TestCase
-                                            {
-                                                UseCase = useCaseName,
-                                                Step = $"Extension {extName} - Step {extStepNumber}",
-                                                TestName = extTpName,
-                                                Preconditions = preconditions,
-                                                Procedure = extProcedure,
-                                                ExpectedResults = extExpectedResults,
-                                                Postconditions = postconditions
-                                            };
-                                            extensionTestCases[key] = testCase;
-                                            _testCases.Add(testCase);
-                                            testCaseCounter++;
-                                        }
+                                        extSteps.Add(extStepName);
                                     }
                                 }
-                                extStepNumber++;
                             }
+
+                            extensionFlows.Add((extName, extSteps));
                         }
                     }
-
-                    stepNumber++;
                 }
 
-                // Loại bỏ test case trống
-                _testCases.RemoveAll(tc => string.IsNullOrEmpty(tc.Procedure) && string.IsNullOrEmpty(tc.ExpectedResults));
+                // Lưu các luồng cuối cùng nếu còn
+                if (currentMediumFlow.Count > 1) mediumFlows.Add(currentMediumFlow);
+                if (currentGoogleFlow.Count > 1) googleFlows.Add(currentGoogleFlow);
+                if (currentFacebookFlow.Count > 1) facebookFlows.Add(currentFacebookFlow);
+
+                // Tạo Test Case cho Medium Flows (TC-XX)
+                foreach (var flow in mediumFlows)
+                {
+                    if (flow.Count > 0)
+                    {
+                        // Test Case thành công (không Activity Log)
+                        string procedure = string.Join("\r\n", flow);
+                        string expectedResults = "Hệ thống chuyển đến trang chủ";
+
+                        var testCase = new TestCase
+                        {
+                            UseCase = useCaseName,
+                            TestName = $"TC-{tcCounter:D2}",
+                            Procedure = procedure,
+                            ExpectedResults = expectedResults
+                        };
+                        _testCases.Add(testCase);
+                        tcCounter++;
+
+                        // Test Case thành công (có Activity Log)
+                        List<string> flowWithLog = new List<string>(flow);
+                        if (flow.Any(step => step.ToLower().Contains("xác thực thông tin đăng nhập thành công")))
+                        {
+                            flowWithLog.Add("Hệ thống ghi nhận hoạt động đăng nhập thành công vào Activity Log");
+                        }
+                        string procedureWithLog = string.Join("\r\n", flowWithLog);
+
+                        var testCaseWithLog = new TestCase
+                        {
+                            UseCase = useCaseName,
+                            TestName = $"TC-{tcCounter:D2}",
+                            Procedure = procedureWithLog,
+                            ExpectedResults = expectedResults
+                        };
+                        _testCases.Add(testCaseWithLog);
+                        tcCounter++;
+
+                        // Test Case thất bại
+                        if (flow.Any(step => step.ToLower().Contains("nhập tài khoản medium")))
+                        {
+                            List<string> failureFlow = new List<string>(flow);
+                            failureFlow[failureFlow.Count - 1] = "Hệ thống xác thực thông tin đăng nhập không thành công";
+                            string failureProcedure = string.Join("\r\n", failureFlow);
+                            var failureTestCase = new TestCase
+                            {
+                                UseCase = useCaseName,
+                                TestName = $"TC-{tcCounter:D2}",
+                                Procedure = failureProcedure,
+                                ExpectedResults = "Hệ thống hiển thị thông báo lỗi"
+                            };
+                            _testCases.Add(failureTestCase);
+                            tcCounter++;
+                        }
+                    }
+                }
+
+                // Tạo Test Case cho Google Flows (TC-XX)
+                foreach (var flow in googleFlows)
+                {
+                    if (flow.Count > 0)
+                    {
+                        List<string> flowWithLog = new List<string>(flow);
+                        if (flow.Any(step => step.ToLower().Contains("xác thực thông tin đăng nhập thành công")))
+                        {
+                            flowWithLog.Add("Hệ thống ghi nhận hoạt động đăng nhập thành công vào Activity Log");
+                        }
+
+                        string procedureWithLog = string.Join("\r\n", flowWithLog);
+                        string expectedResults = "Hệ thống chuyển đến trang chủ";
+
+                        var testCaseWithLog = new TestCase
+                        {
+                            UseCase = useCaseName,
+                            TestName = $"TC-{tcCounter:D2}",
+                            Procedure = procedureWithLog,
+                            ExpectedResults = expectedResults
+                        };
+                        _testCases.Add(testCaseWithLog);
+                        tcCounter++;
+                    }
+                }
+
+                // Tạo Test Case cho Facebook Flows (TC-XX)
+                foreach (var flow in facebookFlows)
+                {
+                    if (flow.Count > 0)
+                    {
+                        List<string> flowWithLog = new List<string>(flow);
+                        if (flow.Any(step => step.ToLower().Contains("xác thực thông tin đăng nhập thành công")))
+                        {
+                            flowWithLog.Add("Hệ thống ghi nhận hoạt động đăng nhập thành công vào Activity Log");
+                        }
+
+                        string procedureWithLog = string.Join("\r\n", flowWithLog);
+                        string expectedResults = "Hệ thống chuyển đến trang chủ";
+
+                        var testCaseWithLog = new TestCase
+                        {
+                            UseCase = useCaseName,
+                            TestName = $"TC-{tcCounter:D2}",
+                            Procedure = procedureWithLog,
+                            ExpectedResults = expectedResults
+                        };
+                        _testCases.Add(testCaseWithLog);
+                        tcCounter++;
+                    }
+                }
+
+                // Tạo Test Case cho Extension Flows (TC-XX)
+                foreach (var (extName, extSteps) in extensionFlows)
+                {
+                    if (extSteps.Count > 0)
+                    {
+                        string procedure = string.Join("\r\n", extSteps);
+                        string expectedResults = extName.ToLower().Contains("quên mật khẩu") ? "Hệ thống gửi thông tin đặt lại mật khẩu" : "Thao tác ngoại lệ hoàn tất";
+
+                        var testCase = new TestCase
+                        {
+                            UseCase = useCaseName,
+                            TestName = $"TC-{tcCounter:D2}",
+                            Procedure = procedure,
+                            ExpectedResults = expectedResults
+                        };
+                        _testCases.Add(testCase);
+                        tcCounter++;
+                    }
+                }
+
+                // Kiểm tra nếu không có test case nào được tạo
+                if (_testCases.Count == 0)
+                {
+                    txtThongbao.AppendText("Không sinh được test case nào từ Use Case!\r\n");
+                }
+                else
+                {
+                    txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case từ Use Case!\r\n");
+                }
             }
             catch (Exception ex)
             {
                 txtThongbao.AppendText($"Lỗi khi sinh test case: {ex.Message}\r\n");
+            }
+
+
+
+
+
+            //SINH TEST CASE KHI FILE XML CÓ HIỆN RÕ BASIC FLOW, ...
+            //try
+            //{
+            //    _testCases.Clear(); // Xóa danh sách test case cũ
+            //    txtThongbao.Clear(); // Xóa nội dung cũ trong txtThongbao
+
+            //    // Tìm Use Case trong file XML dựa trên ID
+            //    var useCase = xmlDoc.Descendants("UseCase")
+            //        .FirstOrDefault(uc => uc.Attribute("Id")?.Value == selectedUseCaseId);
+
+            //    if (useCase == null)
+            //    {
+            //        txtThongbao.AppendText("Không tìm thấy Use Case!\r\n");
+            //        return;
+            //    }
+
+            //    string useCaseName = useCase.Attribute("Name")?.Value ?? "UC-Unknown"; // Sử dụng Name thay vì Id
+
+            //    // Lấy thông tin Preconditions và Post-conditions
+            //    var taggedValues = useCase.Element("TaggedValues")?.Elements("TaggedValue");
+            //    var preconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Preconditions")?.Attribute("Value")?.Value ?? "";
+            //    var postconditions = taggedValues?.FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Post-conditions")?.Attribute("Value")?.Value ?? "";
+
+            //    int testCaseCounter = 1; // Đếm để tạo Test Case ID (TC-01, TC-02, v.v.)
+
+            //    // Lấy các luồng (Flows)
+            //    var flows = useCase.Element("Flows");
+            //    if (flows == null)
+            //    {
+            //        txtThongbao.AppendText("Không tìm thấy luồng nào trong Use Case!\r\n");
+            //        return;
+            //    }
+
+            //    // **Sinh test case cho UC-1.1 (Đăng nhập)**
+
+            //    var basicFlow = flows.Element("BasicFlow");
+            //    if (basicFlow == null)
+            //    {
+            //        txtThongbao.AppendText("Không tìm thấy Basic Flow trong Use Case!\r\n");
+            //        return;
+            //    }
+
+            //    // Test Case 1: Mở ứng dụng và chọn phương thức đăng nhập (bước 1 và 2 của Basic Flow)
+            //    var stepsTC1 = basicFlow.Elements("Step")
+            //        .Where(s => new[] { "Step 1", "Step 2" }.Contains(s.Attribute("Name")?.Value))
+            //        .Select(s => s.Attribute("Description")?.Value)
+            //        .Where(desc => !string.IsNullOrEmpty(desc));
+            //    var procedureTC1 = string.Join("\n", stepsTC1);
+            //    var expectedResultTC1 = basicFlow.Elements("Step")
+            //        .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 1")?.Attribute("ExpectedResult")?.Value ?? "Hệ thống chuyển đến trang chủ";
+
+            //    var testCase1 = new TestCase
+            //    {
+            //        UseCase = useCaseName,
+            //        TestName = $"TC-{testCaseCounter:D2}",
+            //        Preconditions = preconditions,
+            //        Procedure = procedureTC1,
+            //        ExpectedResults = expectedResultTC1,
+
+
+            //        Postconditions = postconditions
+            //    };
+            //    _testCases.Add(testCase1);
+            //    testCaseCounter++;
+
+            //    // Test Case 2: Đăng nhập bằng tài khoản Medium (Basic Flow đầy đủ)
+            //    var stepsTC2 = basicFlow.Elements("Step")
+            //        .Select(s => s.Attribute("Description")?.Value)
+            //        .Where(desc => !string.IsNullOrEmpty(desc));
+            //    var procedureTC2 = string.Join("\n", stepsTC2);
+            //    var expectedResultTC2 = basicFlow.Elements("Step")
+            //        .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 4")?.Attribute("ExpectedResult")?.Value ?? "Hệ thống chuyển đến trang bài viết";
+
+            //    var testCase2 = new TestCase
+            //    {
+            //        UseCase = useCaseName,
+            //        TestName = $"TC-{testCaseCounter:D2}",
+            //        Preconditions = preconditions,
+            //        Procedure = procedureTC2,
+            //        ExpectedResults = expectedResultTC2,
+            //        Postconditions = postconditions
+            //    };
+            //    _testCases.Add(testCase2);
+            //    testCaseCounter++;
+
+            //    // Test Case 3: Đăng nhập bằng Gmail (Alternative Flow 2a + bước 5 của Basic Flow)
+            //    var altFlowGmail = flows.Elements("AlternativeFlow").FirstOrDefault(f => f.Attribute("Name")?.Value == "2a");
+            //    if (altFlowGmail != null)
+            //    {
+            //        var stepsGmail = new List<string>
+            //{
+            //    basicFlow.Elements("Step").FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 1")?.Attribute("Description")?.Value
+            //};
+            //        stepsGmail.AddRange(altFlowGmail.Elements("Step")
+            //            .Select(s => s.Attribute("Description")?.Value)
+            //            .Where(desc => !string.IsNullOrEmpty(desc)));
+            //        stepsGmail.Add(basicFlow.Elements("Step")
+            //            .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 5")?.Attribute("Description")?.Value);
+
+            //        var procedureGmail = string.Join("\n", stepsGmail.Where(s => !string.IsNullOrEmpty(s)));
+            //        var expectedResultGmail = altFlowGmail.Elements("Step")
+            //            .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 4a")?.Attribute("ExpectedResult")?.Value ?? "Hệ thống chuyển đến trang bài viết";
+
+            //        var testCase3 = new TestCase
+            //        {
+            //            UseCase = useCaseName,
+            //            TestName = $"TC-{testCaseCounter:D2}",
+            //            Preconditions = preconditions,
+            //            Procedure = procedureGmail,
+            //            ExpectedResults = expectedResultGmail,
+            //            Postconditions = postconditions
+            //        };
+            //        _testCases.Add(testCase3);
+            //        testCaseCounter++;
+            //    }
+
+            //    // Test Case 4: Đăng nhập bằng Facebook (Alternative Flow 2b + bước 5 của Basic Flow)
+            //    var altFlowFacebook = flows.Elements("AlternativeFlow").FirstOrDefault(f => f.Attribute("Name")?.Value == "2b");
+            //    if (altFlowFacebook != null)
+            //    {
+            //        var stepsFacebook = new List<string>
+            //{
+            //    basicFlow.Elements("Step").FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 1")?.Attribute("Description")?.Value
+            //};
+            //        stepsFacebook.AddRange(altFlowFacebook.Elements("Step")
+            //            .Select(s => s.Attribute("Description")?.Value)
+            //            .Where(desc => !string.IsNullOrEmpty(desc)));
+            //        stepsFacebook.Add(basicFlow.Elements("Step")
+            //            .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 5")?.Attribute("Description")?.Value);
+
+            //        var procedureFacebook = string.Join("\n", stepsFacebook.Where(s => !string.IsNullOrEmpty(s)));
+            //        var expectedResultFacebook = altFlowFacebook.Elements("Step")
+            //            .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 4b")?.Attribute("ExpectedResult")?.Value ?? "Hệ thống chuyển đến trang bài viết";
+
+            //        var testCase4 = new TestCase
+            //        {
+            //            UseCase = useCaseName,
+            //            TestName = $"TC-{testCaseCounter:D2}",
+            //            Preconditions = preconditions,
+            //            Procedure = procedureFacebook,
+            //            ExpectedResults = expectedResultFacebook,
+            //            Postconditions = postconditions
+            //        };
+            //        _testCases.Add(testCase4);
+            //        testCaseCounter++;
+            //    }
+
+            //    // Test Case 5: Đăng nhập thất bại (Exception Flow 4c)
+            //    var excFlow = flows.Element("ExceptionFlow");
+            //    if (excFlow != null)
+            //    {
+            //        var stepsFail = new List<string>
+            //{
+            //    basicFlow.Elements("Step").FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 1")?.Attribute("Description")?.Value,
+            //    basicFlow.Elements("Step").FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 2")?.Attribute("Description")?.Value
+            //};
+            //        stepsFail.AddRange(excFlow.Elements("Step")
+            //            .Select(s => s.Attribute("Description")?.Value)
+            //            .Where(desc => !string.IsNullOrEmpty(desc)));
+
+            //        var procedureFail = string.Join("\n", stepsFail.Where(s => !string.IsNullOrEmpty(s)));
+            //        var expectedResultFail = excFlow.Elements("Step")
+            //            .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 4c")?.Attribute("ExpectedResult")?.Value ?? "Hệ thống hiển thị thông báo lỗi";
+
+            //        var testCase5 = new TestCase
+            //        {
+            //            UseCase = useCaseName,
+            //            TestName = $"TC-{testCaseCounter:D2}",
+            //            Preconditions = preconditions,
+            //            Procedure = procedureFail,
+            //            ExpectedResults = expectedResultFail,
+            //            Postconditions = postconditions
+            //        };
+            //        _testCases.Add(testCase5);
+            //        testCaseCounter++;
+            //    }
+
+            //    // **Sinh test case cho UC-1.2 (Lấy lại mật khẩu)**
+
+            //    // Tìm các Use Case mở rộng (Extend) từ UC-1.1
+            //    var relationships = xmlDoc.Descendants("RelationshipContainer")?.Elements("Relationship")
+            //        .Where(r => r.Attribute("Type")?.Value == "Extend" && r.Element("Source")?.Attribute("Id")?.Value == selectedUseCaseId);
+
+            //    if (relationships != null)
+            //    {
+            //        foreach (var relationship in relationships)
+            //        {
+            //            string targetUseCaseId = relationship.Element("Target")?.Attribute("Id")?.Value;
+            //            var targetUseCase = xmlDoc.Descendants("UseCase")
+            //                .FirstOrDefault(uc => uc.Attribute("Id")?.Value == targetUseCaseId);
+
+            //            if (targetUseCase != null)
+            //            {
+            //                string targetUseCaseName = targetUseCase.Attribute("Name")?.Value ?? "UC-Unknown";
+            //                var targetPreconditions = targetUseCase.Element("TaggedValues")?.Elements("TaggedValue")
+            //                    .FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Preconditions")?.Attribute("Value")?.Value ?? "";
+            //                var targetPostconditions = targetUseCase.Element("TaggedValues")?.Elements("TaggedValue")
+            //                    .FirstOrDefault(tv => tv.Attribute("Name")?.Value == "Post-conditions")?.Attribute("Value")?.Value ?? "";
+
+            //                var targetFlows = targetUseCase.Element("Flows");
+            //                if (targetFlows != null)
+            //                {
+            //                    var targetBasicFlow = targetFlows.Element("BasicFlow");
+            //                    if (targetBasicFlow != null)
+            //                    {
+            //                        // Test Case 1 cho UC-1.2: Chọn "Quên mật khẩu"
+            //                        var stepsTC6 = targetBasicFlow.Elements("Step")
+            //                            .Where(s => s.Attribute("Name")?.Value == "Step 1")
+            //                            .Select(s => s.Attribute("Description")?.Value)
+            //                            .Where(desc => !string.IsNullOrEmpty(desc));
+            //                        var procedureTC6 = string.Join("\n", stepsTC6);
+            //                        var expectedResultTC6 = targetBasicFlow.Elements("Step")
+            //                            .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 1")?.Attribute("ExpectedResult")?.Value ?? "Hệ thống hiển thị form nhập email";
+
+            //                        var testCase6 = new TestCase
+            //                        {
+            //                            UseCase = targetUseCaseName,
+            //                            TestName = $"TC-{testCaseCounter:D2}",
+            //                            Preconditions = targetPreconditions,
+            //                            Procedure = procedureTC6,
+            //                            ExpectedResults = expectedResultTC6,
+            //                            Postconditions = targetPostconditions
+            //                        };
+            //                        _testCases.Add(testCase6);
+            //                        testCaseCounter++;
+
+            //                        // Test Case 2 cho UC-1.2: Nhập email và xác nhận
+            //                        var stepsTC7 = targetBasicFlow.Elements("Step")
+            //                            .Where(s => new[] { "Step 2", "Step 3" }.Contains(s.Attribute("Name")?.Value))
+            //                            .Select(s => s.Attribute("Description")?.Value)
+            //                            .Where(desc => !string.IsNullOrEmpty(desc));
+            //                        var procedureTC7 = string.Join("\n", stepsTC7);
+            //                        var expectedResultTC7 = targetBasicFlow.Elements("Step")
+            //                            .FirstOrDefault(s => s.Attribute("Name")?.Value == "Step 3")?.Attribute("ExpectedResult")?.Value ?? "Hệ thống gửi email khôi phục mật khẩu";
+
+            //                        var testCase7 = new TestCase
+            //                        {
+            //                            UseCase = targetUseCaseName,
+            //                            TestName = $"TC-{testCaseCounter:D2}",
+            //                            Preconditions = targetPreconditions,
+            //                            Procedure = procedureTC7,
+            //                            ExpectedResults = expectedResultTC7,
+            //                            Postconditions = targetPostconditions
+            //                        };
+            //                        _testCases.Add(testCase7);
+            //                        testCaseCounter++;
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+
+            //    // Hiển thị thông báo
+            //    if (_testCases.Count == 0)
+            //    {
+            //        txtThongbao.AppendText("Không sinh được test case nào từ Use Case!\r\n");
+            //    }
+            //    else
+            //    {
+            //        txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case từ Use Case!\r\n");
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi sinh test case: {ex.Message}\r\n");
+            //}
+        }
+
+        //phương pháp phân tích cú pháp XML chung
+        private void ParseGenericXml(string filePath)
+        {
+            try
+            {
+                _testCases.Clear(); // Xóa danh sách test case cũ
+                txtThongbao.Clear(); // Xóa nội dung cũ trong txtThongbao
+
+                xmlDoc = XDocument.Load(filePath); // Tải file XML
+
+                // Tìm các phần tử chính (có thể là "UseCase", "TestCase", "Scenario", v.v.)
+                var mainElements = xmlDoc.Descendants()
+                    .Where(e => e.Name.LocalName.Contains("UseCase") || e.Name.LocalName.Contains("TestCase") || e.Name.LocalName.Contains("Scenario"))
+                    .ToList();
+
+                if (!mainElements.Any())
+                {
+                    txtThongbao.AppendText("Không tìm thấy phần tử chính nào (UseCase/TestCase/Scenario) trong file XML!\r\n");
+                    return;
+                }
+
+                int testCaseCounter = 1;
+
+                foreach (var element in mainElements)
+                {
+                    string elementId = element.Attribute("Id")?.Value ?? $"Element-{testCaseCounter}";
+                    string elementName = element.Attribute("Name")?.Value ?? "Unnamed Element";
+
+                    // Lấy các điều kiện trước và sau (nếu có)
+                    string preconditions = element.Descendants()
+                        .FirstOrDefault(e => e.Name.LocalName.Contains("Precondition") || e.Name.LocalName.Contains("Pre-condition"))?.Value
+                        ?? element.Attributes().FirstOrDefault(a => a.Name.LocalName.Contains("Precondition") || a.Name.LocalName.Contains("Pre-condition"))?.Value
+                        ?? "";
+                    string postconditions = element.Descendants()
+                        .FirstOrDefault(e => e.Name.LocalName.Contains("Postcondition") || e.Name.LocalName.Contains("Post-condition"))?.Value
+                        ?? element.Attributes().FirstOrDefault(a => a.Name.LocalName.Contains("Postcondition") || a.Name.LocalName.Contains("Post-condition"))?.Value
+                        ?? "";
+
+                    // Tìm các bước hoặc hành động
+                    var steps = element.Descendants()
+                        .Where(e => e.Name.LocalName.Contains("Step") || e.Name.LocalName.Contains("Action") || e.Name.LocalName.Contains("Procedure"))
+                        .ToList();
+
+                    int stepNumber = 1;
+                    foreach (var step in steps)
+                    {
+                        string stepName = step.Attribute("Name")?.Value ?? step.Value ?? $"Step {stepNumber}";
+                        string procedure = step.Descendants()
+                            .FirstOrDefault(e => e.Name.LocalName.Contains("Procedure") || e.Name.LocalName.Contains("Action"))?.Value
+                            ?? step.Attributes().FirstOrDefault(a => a.Name.LocalName.Contains("Procedure") || a.Name.LocalName.Contains("Action"))?.Value
+                            ?? stepName;
+                        string expectedResults = step.Descendants()
+                            .FirstOrDefault(e => e.Name.LocalName.Contains("ExpectedResult") || e.Name.LocalName.Contains("Expected"))?.Value
+                            ?? step.Attributes().FirstOrDefault(a => a.Name.LocalName.Contains("ExpectedResult") || a.Name.LocalName.Contains("Expected"))?.Value
+                            ?? "Hệ thống xử lý thành công";
+
+                        // Tạo test case
+                        var testCase = new TestCase
+                        {
+                            UseCase = elementId,
+                            Step = $"Step {stepNumber}",
+                            TestName = $"TC-{testCaseCounter:D2}",
+                            Preconditions = preconditions,
+                            Procedure = procedure,
+                            ExpectedResults = expectedResults,
+                            Postconditions = postconditions
+                        };
+                        _testCases.Add(testCase);
+                        testCaseCounter++;
+                        stepNumber++;
+                    }
+                }
+
+                if (_testCases.Count == 0)
+                {
+                    txtThongbao.AppendText("Không sinh được test case nào từ file XML!\r\n");
+                }
+                else
+                {
+                    txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case từ file XML!\r\n");
+                }
+            }
+            catch (Exception ex)
+            {
+                txtThongbao.AppendText($"Lỗi khi phân tích file XML: {ex.Message}\r\n");
             }
         }
 
         //sự kiện cho nút Sinh test case
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            
+            //// Kiểm tra xem đã chọn file và thư mục chưa
+            //if (string.IsNullOrEmpty(txtInputTM.Text))
+            //{
+            //    txtThongbao.AppendText("Vui lòng chọn file đặc tả!\r\n");
+            //    return;
+            //}
 
+            //if (string.IsNullOrEmpty(txtOutputTM.Text))
+            //{
+            //    txtThongbao.AppendText("Vui lòng chọn thư mục đầu ra!\r\n");
+            //    return;
+            //}
+
+            //try
+            //{
+            //    txtThongbao.Clear(); // Xóa thông báo cũ
+
+            //    // Nếu xử lý file XML
+            //    if (radioXMLIn.Checked)
+            //    {
+            //        if (string.IsNullOrEmpty(selectedUseCaseId))
+            //        {
+            //            txtThongbao.AppendText("Không có Use Case nào được chọn (ngầm)!\r\n");
+            //            return;
+            //        }
+
+            //        // Dùng phương thức cụ thể cho XML hiện tại
+            //        GenerateTestCases();
+            //        // Nếu muốn thử generic parser, có thể gọi:
+            //        // ParseGenericXml(_selectedFilePath);
+            //    }
+            //    // Nếu xử lý file .txt
+            //    else if (radioTextIn.Checked)
+            //    {
+            //        if (string.IsNullOrEmpty(_selectedFilePath))
+            //        {
+            //            txtThongbao.AppendText("Không có file .txt nào được chọn!\r\n");
+            //            return;
+            //        }
+            //        ParseTxtFile(_selectedFilePath);
+            //    }
+            //    else if (radioXMIIn.Checked)
+            //    {
+            //        txtThongbao.AppendText("Chức năng xử lý file XMI chưa được triển khai.\r\n");
+            //        return;
+            //    }
+
+            //    if (_testCases == null || _testCases.Count == 0)
+            //    {
+            //        txtThongbao.AppendText("Không có test case nào để sinh file đầu ra. Vui lòng kiểm tra file và thử lại.\r\n");
+            //        return;
+            //    }
+
+            //    string outputFolder = txtOutputTM.Text;
+            //    string outputFormat = radioWordOut.Checked ? "Word" : radioExcelOut.Checked ? "Excel" : "HTML";
+            //    string fileExtension = outputFormat.ToLower() == "excel" ? "xlsx" :
+            //                          outputFormat.ToLower() == "word" ? "txt" :
+            //                          "html";
+            //    string outputFile = Path.Combine(outputFolder, $"TestCases_{DateTime.Now:yyyyMMdd_HHmmss}.{fileExtension}");
+
+            //    // Sinh file đầu ra
+            //    GenerateOutputFile(_testCases, outputFile, outputFormat);
+            //    txtThongbao.AppendText($"Đã sinh file đầu ra tại: {outputFile}\r\n");
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi sinh file đầu ra: {ex.Message}\r\n");
+            //}
+
+            // Kiểm tra xem đã chọn file và thư mục chưa
+            // Kiểm tra xem đã chọn file và thư mục chưa
             // Kiểm tra xem đã chọn file và thư mục chưa
             if (string.IsNullOrEmpty(txtInputTM.Text))
             {
@@ -672,17 +1509,20 @@ namespace DATN
             {
                 txtThongbao.Clear(); // Xóa thông báo cũ
 
-                // Nếu xử lý file XML, sinh test case từ XML
+                // Nếu xử lý file XML
                 if (radioXMLIn.Checked)
                 {
-                    if (string.IsNullOrEmpty(selectedUseCaseId))
+                    // Kiểm tra xem người dùng đã chọn Use Case chưa
+                    if (comboboxUC.SelectedIndex == -1 || string.IsNullOrEmpty(selectedUseCaseId))
                     {
-                        txtThongbao.AppendText("Không có Use Case nào được chọn (ngầm)!\r\n");
+                        txtThongbao.AppendText("Chưa chọn Use Case!\r\n");
                         return;
                     }
+
+                    // Dùng phương thức cụ thể cho XML hiện tại
                     GenerateTestCases();
                 }
-                // Nếu xử lý file .txt, sinh test case từ file .txt
+                // Nếu xử lý file .txt
                 else if (radioTextIn.Checked)
                 {
                     if (string.IsNullOrEmpty(_selectedFilePath))
@@ -713,12 +1553,13 @@ namespace DATN
 
                 // Sinh file đầu ra
                 GenerateOutputFile(_testCases, outputFile, outputFormat);
-                txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case\r\n");
+                txtThongbao.AppendText($"Đã sinh file đầu ra tại: {outputFile}\r\n");
             }
             catch (Exception ex)
             {
                 txtThongbao.AppendText($"Lỗi khi sinh file đầu ra: {ex.Message}\r\n");
             }
+
         }
 
       
@@ -805,12 +1646,29 @@ namespace DATN
         //sự kiện cho nút làm mới
         private void btnReset_Click(object sender, EventArgs e)
         {
+            //txtInputTM.Clear();
+            //txtOutputTM.Clear();
+            //txtThongbao.Clear();
+            //_testCases.Clear();
+            //_selectedFilePath = null;
+            //selectedUseCaseId = null;
+            //radioTextIn.Checked = false;
+            //radioXMLIn.Checked = true; // Mặc định chọn XML
+            //radioXMIIn.Checked = false;
+            //radioWordOut.Checked = true; // Mặc định chọn Word
+            //radioExcelOut.Checked = false;
+            //radioHTMLOut.Checked = false;
+            //txtThongbao.AppendText("Đã làm mới các lựa chọn.\r\n");
+
+
             txtInputTM.Clear();
             txtOutputTM.Clear();
             txtThongbao.Clear();
             _testCases.Clear();
             _selectedFilePath = null;
             selectedUseCaseId = null;
+            comboboxUC.Items.Clear(); // Xóa danh sách Use Case
+            comboboxUC.SelectedIndex = -1; // Đặt lại ComboBox
             radioTextIn.Checked = false;
             radioXMLIn.Checked = true; // Mặc định chọn XML
             radioXMIIn.Checked = false;
@@ -825,6 +1683,9 @@ namespace DATN
         {
             MessageBox.Show("Hướng dẫn sử dụng:\n1. Chọn định dạng đầu vào (XML).\n2. Chọn Use Case từ danh sách.\n3. Chọn thư mục đầu ra.\n4. Nhấn 'Sinh test case' để tạo test case.");
         }
+
+
+
 
 
         

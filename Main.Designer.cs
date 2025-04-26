@@ -30,14 +30,16 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.radioHTMLOut = new System.Windows.Forms.RadioButton();
-            this.radioExcelOut = new System.Windows.Forms.RadioButton();
+            this.panel2 = new System.Windows.Forms.Panel();
             this.radioWordOut = new System.Windows.Forms.RadioButton();
-            this.radioXMLIn = new System.Windows.Forms.RadioButton();
-            this.radioXMIIn = new System.Windows.Forms.RadioButton();
-            this.radioTextIn = new System.Windows.Forms.RadioButton();
-            this.label2 = new System.Windows.Forms.Label();
+            this.radioHTMLOut = new System.Windows.Forms.RadioButton();
             this.label3 = new System.Windows.Forms.Label();
+            this.radioExcelOut = new System.Windows.Forms.RadioButton();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.radioTextIn = new System.Windows.Forms.RadioButton();
+            this.radioXMIIn = new System.Windows.Forms.RadioButton();
+            this.label2 = new System.Windows.Forms.Label();
+            this.radioXMLIn = new System.Windows.Forms.RadioButton();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.btnInput = new System.Windows.Forms.Button();
             this.btnOutput = new System.Windows.Forms.Button();
@@ -51,14 +53,15 @@
             this.btnHelp = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
             this.btnGenerate = new System.Windows.Forms.Button();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.comboboxUC = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
-            this.panel1.SuspendLayout();
-            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -90,31 +93,18 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Định dạng";
             // 
-            // radioHTMLOut
+            // panel2
             // 
-            this.radioHTMLOut.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.radioHTMLOut.AutoSize = true;
-            this.radioHTMLOut.Location = new System.Drawing.Point(1076, 4);
-            this.radioHTMLOut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.radioHTMLOut.Name = "radioHTMLOut";
-            this.radioHTMLOut.Size = new System.Drawing.Size(84, 32);
-            this.radioHTMLOut.TabIndex = 8;
-            this.radioHTMLOut.TabStop = true;
-            this.radioHTMLOut.Text = "HTML";
-            this.radioHTMLOut.UseVisualStyleBackColor = true;
-            // 
-            // radioExcelOut
-            // 
-            this.radioExcelOut.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.radioExcelOut.AutoSize = true;
-            this.radioExcelOut.Location = new System.Drawing.Point(719, 4);
-            this.radioExcelOut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.radioExcelOut.Name = "radioExcelOut";
-            this.radioExcelOut.Size = new System.Drawing.Size(76, 32);
-            this.radioExcelOut.TabIndex = 7;
-            this.radioExcelOut.TabStop = true;
-            this.radioExcelOut.Text = "Excel";
-            this.radioExcelOut.UseVisualStyleBackColor = true;
+            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel2.Controls.Add(this.radioWordOut);
+            this.panel2.Controls.Add(this.radioHTMLOut);
+            this.panel2.Controls.Add(this.label3);
+            this.panel2.Controls.Add(this.radioExcelOut);
+            this.panel2.Location = new System.Drawing.Point(19, 110);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(1206, 47);
+            this.panel2.TabIndex = 10;
             // 
             // radioWordOut
             // 
@@ -129,31 +119,53 @@
             this.radioWordOut.Text = "Word";
             this.radioWordOut.UseVisualStyleBackColor = true;
             // 
-            // radioXMLIn
+            // radioHTMLOut
             // 
-            this.radioXMLIn.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.radioXMLIn.AutoSize = true;
-            this.radioXMLIn.Location = new System.Drawing.Point(1076, 8);
-            this.radioXMLIn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.radioXMLIn.Name = "radioXMLIn";
-            this.radioXMLIn.Size = new System.Drawing.Size(72, 32);
-            this.radioXMLIn.TabIndex = 5;
-            this.radioXMLIn.TabStop = true;
-            this.radioXMLIn.Text = "XML";
-            this.radioXMLIn.UseVisualStyleBackColor = true;
+            this.radioHTMLOut.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.radioHTMLOut.AutoSize = true;
+            this.radioHTMLOut.Location = new System.Drawing.Point(1076, 4);
+            this.radioHTMLOut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.radioHTMLOut.Name = "radioHTMLOut";
+            this.radioHTMLOut.Size = new System.Drawing.Size(84, 32);
+            this.radioHTMLOut.TabIndex = 8;
+            this.radioHTMLOut.TabStop = true;
+            this.radioHTMLOut.Text = "HTML";
+            this.radioHTMLOut.UseVisualStyleBackColor = true;
             // 
-            // radioXMIIn
+            // label3
             // 
-            this.radioXMIIn.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.radioXMIIn.AutoSize = true;
-            this.radioXMIIn.Location = new System.Drawing.Point(719, 8);
-            this.radioXMIIn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.radioXMIIn.Name = "radioXMIIn";
-            this.radioXMIIn.Size = new System.Drawing.Size(68, 32);
-            this.radioXMIIn.TabIndex = 4;
-            this.radioXMIIn.TabStop = true;
-            this.radioXMIIn.Text = "XMI";
-            this.radioXMIIn.UseVisualStyleBackColor = true;
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(16, 6);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(167, 28);
+            this.label3.TabIndex = 0;
+            this.label3.Text = "Định dạng đầu ra:";
+            // 
+            // radioExcelOut
+            // 
+            this.radioExcelOut.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.radioExcelOut.AutoSize = true;
+            this.radioExcelOut.Location = new System.Drawing.Point(719, 4);
+            this.radioExcelOut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.radioExcelOut.Name = "radioExcelOut";
+            this.radioExcelOut.Size = new System.Drawing.Size(76, 32);
+            this.radioExcelOut.TabIndex = 7;
+            this.radioExcelOut.TabStop = true;
+            this.radioExcelOut.Text = "Excel";
+            this.radioExcelOut.UseVisualStyleBackColor = true;
+            // 
+            // panel1
+            // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Controls.Add(this.radioTextIn);
+            this.panel1.Controls.Add(this.radioXMIIn);
+            this.panel1.Controls.Add(this.label2);
+            this.panel1.Controls.Add(this.radioXMLIn);
+            this.panel1.Location = new System.Drawing.Point(19, 43);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(1206, 49);
+            this.panel1.TabIndex = 9;
             // 
             // radioTextIn
             // 
@@ -168,6 +180,19 @@
             this.radioTextIn.Text = "Text";
             this.radioTextIn.UseVisualStyleBackColor = true;
             // 
+            // radioXMIIn
+            // 
+            this.radioXMIIn.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.radioXMIIn.AutoSize = true;
+            this.radioXMIIn.Location = new System.Drawing.Point(719, 8);
+            this.radioXMIIn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.radioXMIIn.Name = "radioXMIIn";
+            this.radioXMIIn.Size = new System.Drawing.Size(68, 32);
+            this.radioXMIIn.TabIndex = 4;
+            this.radioXMIIn.TabStop = true;
+            this.radioXMIIn.Text = "XMI";
+            this.radioXMIIn.UseVisualStyleBackColor = true;
+            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -177,19 +202,25 @@
             this.label2.TabIndex = 2;
             this.label2.Text = "Định dạng đầu vào:";
             // 
-            // label3
+            // radioXMLIn
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 6);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(167, 28);
-            this.label3.TabIndex = 0;
-            this.label3.Text = "Định dạng đầu ra:";
+            this.radioXMLIn.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.radioXMLIn.AutoSize = true;
+            this.radioXMLIn.Location = new System.Drawing.Point(1076, 8);
+            this.radioXMLIn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.radioXMLIn.Name = "radioXMLIn";
+            this.radioXMLIn.Size = new System.Drawing.Size(72, 32);
+            this.radioXMLIn.TabIndex = 5;
+            this.radioXMLIn.TabStop = true;
+            this.radioXMLIn.Text = "XML";
+            this.radioXMLIn.UseVisualStyleBackColor = true;
             // 
             // groupBox2
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.comboboxUC);
+            this.groupBox2.Controls.Add(this.label6);
             this.groupBox2.Controls.Add(this.btnInput);
             this.groupBox2.Controls.Add(this.btnOutput);
             this.groupBox2.Controls.Add(this.txtOutputTM);
@@ -197,11 +228,11 @@
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox2.Location = new System.Drawing.Point(17, 285);
+            this.groupBox2.Location = new System.Drawing.Point(17, 283);
             this.groupBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.groupBox2.Size = new System.Drawing.Size(1247, 155);
+            this.groupBox2.Size = new System.Drawing.Size(1247, 251);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Thư mục";
@@ -221,7 +252,7 @@
             // btnOutput
             // 
             this.btnOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOutput.Location = new System.Drawing.Point(1097, 90);
+            this.btnOutput.Location = new System.Drawing.Point(1095, 193);
             this.btnOutput.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnOutput.Name = "btnOutput";
             this.btnOutput.Size = new System.Drawing.Size(96, 37);
@@ -234,7 +265,7 @@
             // 
             this.txtOutputTM.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOutputTM.Location = new System.Drawing.Point(273, 91);
+            this.txtOutputTM.Location = new System.Drawing.Point(273, 194);
             this.txtOutputTM.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtOutputTM.Name = "txtOutputTM";
             this.txtOutputTM.Size = new System.Drawing.Size(759, 34);
@@ -253,7 +284,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(16, 94);
+            this.label5.Location = new System.Drawing.Point(14, 197);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(151, 28);
             this.label5.TabIndex = 1;
@@ -264,9 +295,9 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(16, 44);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(89, 28);
+            this.label4.Size = new System.Drawing.Size(104, 28);
             this.label4.TabIndex = 0;
-            this.label4.Text = "Use Case";
+            this.label4.Text = "File đặc tả:";
             // 
             // groupBox3
             // 
@@ -274,11 +305,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.txtThongbao);
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox3.Location = new System.Drawing.Point(17, 468);
+            this.groupBox3.Location = new System.Drawing.Point(14, 553);
             this.groupBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.groupBox3.Size = new System.Drawing.Size(1247, 270);
+            this.groupBox3.Size = new System.Drawing.Size(1247, 235);
             this.groupBox3.TabIndex = 3;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Thông báo";
@@ -291,22 +322,23 @@
             this.txtThongbao.Multiline = true;
             this.txtThongbao.Name = "txtThongbao";
             this.txtThongbao.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtThongbao.Size = new System.Drawing.Size(1241, 239);
+            this.txtThongbao.Size = new System.Drawing.Size(1241, 204);
             this.txtThongbao.TabIndex = 0;
             // 
             // groupBox4
             // 
             this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Controls.Add(this.button1);
             this.groupBox4.Controls.Add(this.btnHelp);
             this.groupBox4.Controls.Add(this.btnReset);
             this.groupBox4.Controls.Add(this.btnGenerate);
             this.groupBox4.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox4.Location = new System.Drawing.Point(17, 773);
+            this.groupBox4.Location = new System.Drawing.Point(17, 806);
             this.groupBox4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.groupBox4.Size = new System.Drawing.Size(1244, 143);
+            this.groupBox4.Size = new System.Drawing.Size(1244, 123);
             this.groupBox4.TabIndex = 4;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Hành động";
@@ -314,7 +346,7 @@
             // btnHelp
             // 
             this.btnHelp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnHelp.Location = new System.Drawing.Point(978, 51);
+            this.btnHelp.Location = new System.Drawing.Point(978, 43);
             this.btnHelp.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(247, 60);
@@ -325,8 +357,8 @@
             // 
             // btnReset
             // 
-            this.btnReset.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnReset.Location = new System.Drawing.Point(495, 51);
+            this.btnReset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnReset.Location = new System.Drawing.Point(347, 43);
             this.btnReset.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(247, 60);
@@ -338,7 +370,7 @@
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnGenerate.Location = new System.Drawing.Point(21, 51);
+            this.btnGenerate.Location = new System.Drawing.Point(19, 43);
             this.btnGenerate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(247, 60);
@@ -347,31 +379,35 @@
             this.btnGenerate.UseVisualStyleBackColor = true;
             this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
             // 
-            // panel1
+            // button1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.button1.Location = new System.Drawing.Point(671, 43);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(247, 60);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "Xuất báo cáo";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(16, 124);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(144, 28);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "Chọn Use Case:\r\n";
+            // 
+            // comboboxUC
+            // 
+            this.comboboxUC.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.Controls.Add(this.radioTextIn);
-            this.panel1.Controls.Add(this.radioXMIIn);
-            this.panel1.Controls.Add(this.label2);
-            this.panel1.Controls.Add(this.radioXMLIn);
-            this.panel1.Location = new System.Drawing.Point(19, 43);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1206, 49);
-            this.panel1.TabIndex = 9;
-            // 
-            // panel2
-            // 
-            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel2.Controls.Add(this.radioWordOut);
-            this.panel2.Controls.Add(this.radioHTMLOut);
-            this.panel2.Controls.Add(this.label3);
-            this.panel2.Controls.Add(this.radioExcelOut);
-            this.panel2.Location = new System.Drawing.Point(19, 110);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1206, 47);
-            this.panel2.TabIndex = 10;
+            this.comboboxUC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboboxUC.FormattingEnabled = true;
+            this.comboboxUC.Location = new System.Drawing.Point(273, 121);
+            this.comboboxUC.Name = "comboboxUC";
+            this.comboboxUC.Size = new System.Drawing.Size(759, 36);
+            this.comboboxUC.TabIndex = 8;
             // 
             // Main
             // 
@@ -387,18 +423,18 @@
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Form1";
+            this.Text = "Main";
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.groupBox1.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox4.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -431,6 +467,9 @@
         private System.Windows.Forms.Button btnInput;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ComboBox comboboxUC;
     }
 }
 
