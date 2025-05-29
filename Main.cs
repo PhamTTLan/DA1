@@ -460,7 +460,6 @@ namespace DATN
         private IEnumerable<StepData> ParseSteps(XElement useCase)
         {
 
-            //ổn nhất hiện tại
             //var steps = new List<StepData>();
             //var uniqueSteps = new HashSet<string>();
 
@@ -472,48 +471,92 @@ namespace DATN
 
             //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase: {useCaseName}\r\n");
 
-            //    var stepContainers = useCase.Descendants("StepContainer");
-            //    txtThongbao.AppendText($"Số StepContainer tìm thấy: {stepContainers.Count()}\r\n");
+            //    var stepContainers = useCase.Descendants("StepContainer").ToList();
+            //    var vpumlModels = useCase.Descendants("vpumlModel")
+            //        .Where(e => e.Attribute("type")?.Value == "step" || e.Attribute("type")?.Value == "alternative")
+            //        .ToList();
 
-            //    int basicFlowStepIndex = 0; // Đếm các bước Basic Flow không phải SYSTEM
-            //    int exceptionCounter = 0; // Đếm các bước Exception Flow
-            //    var basicFlowSteps = new List<XElement>();
+            //    txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
 
-            //    // Thu thập các bước Basic Flow
+            //    int basicFlowStepIndex = 0;
+
+            //    var allSteps = new List<XElement>();
             //    foreach (var container in stepContainers)
             //    {
-            //        var allSteps = container.Descendants("Step")
-            //            .Where(step => step.Name.LocalName != "Extension")
-            //            .GroupBy(step => step.Attribute("Name")?.Value)
-            //            .Select(group => group.First());
+            //        allSteps.AddRange(container.Descendants("Step").Where(step => step.Name.LocalName != "Extension"));
+            //    }
+            //    foreach (var model in vpumlModels.Where(m => m.Attribute("type")?.Value == "step"))
+            //    {
+            //        allSteps.AddRange(model.Descendants("step"));
+            //    }
 
-            //        foreach (var step in allSteps)
+            //    // Xử lý Basic Flow
+            //    for (int i = 0; i < allSteps.Count; i++)
+            //    {
+            //        var step = allSteps[i];
+            //        string description = step.Attribute("Name")?.Value
+            //            ?? step.Attribute("Text")?.Value
+            //            ?? step.Attribute("Description")?.Value
+            //            ?? step.Value.Trim()
+            //            ?? "No description";
+
+            //        if (string.IsNullOrEmpty(description) || description == "No description")
             //        {
-            //            string description = step.Attribute("Name")?.Value
-            //                ?? step.Attribute("Text")?.Value
-            //                ?? step.Attribute("Description")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
+            //            txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ tại index {i}: {description}\r\n");
+            //            continue;
+            //        }
 
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                continue;
-            //            }
+            //        bool isSystemAction = description.ToLower().Contains("atm") || description.ToLower().Contains("hệ thống") || description.ToLower().Contains("hiển thị");
 
-            //            basicFlowSteps.Add(step);
+            //        txtThongbao.AppendText($"Kiểm tra bước tại index {i}: {description}, IsSystemAction: {isSystemAction}\r\n");
 
-            //            bool isSystemStep = description.ToLower().Contains("system") || description.ToLower().Contains("hệ thống");
-
-            //            // Chỉ tăng và đánh số cho các bước không phải SYSTEM
-            //            string numberedDescription = description;
-            //            if (!isSystemStep)
-            //            {
-            //                basicFlowStepIndex++;
-            //                numberedDescription = $"{basicFlowStepIndex}. {description}";
-            //            }
-
+            //        if (!isSystemAction)
+            //        {
+            //            basicFlowStepIndex++;
+            //            string numberedDescription = $"{basicFlowStepIndex}. {description}";
             //            if (uniqueSteps.Add(description))
             //            {
+            //                string expectedResult = "Không có kết quả kỳ vọng";
+            //                List<string> expectedResults = new List<string>();
+
+            //                // Tìm các bước SYSTEM liên tiếp ngay sau (chỉ trong Basic Flow)
+            //                int j = i + 1;
+            //                while (j < allSteps.Count)
+            //                {
+            //                    var nextStep = allSteps[j];
+            //                    string nextDescription = nextStep.Attribute("Name")?.Value
+            //                        ?? nextStep.Attribute("Text")?.Value
+            //                        ?? nextStep.Attribute("Description")?.Value
+            //                        ?? nextStep.Value.Trim()
+            //                        ?? "No description";
+
+            //                    bool isNextSystemAction = nextDescription.ToLower().Contains("atm") || nextDescription.ToLower().Contains("hệ thống") || nextDescription.ToLower().Contains("hiển thị");
+            //                    if (isNextSystemAction)
+            //                    {
+            //                        // Chỉ gộp nếu không phải là thông báo lỗi (thuộc Exception Flow)
+            //                        if (!nextDescription.ToLower().Contains("lỗi") && !nextDescription.ToLower().Contains("error"))
+            //                        {
+            //                            expectedResults.Add(nextDescription.Trim());
+            //                            j++;
+            //                        }
+            //                        else
+            //                        {
+            //                            break; // Dừng nếu gặp thông báo lỗi, tránh gộp nhầm
+            //                        }
+            //                    }
+            //                    else
+            //                    {
+            //                        break; // Thoát nếu gặp bước không phải SYSTEM
+            //                    }
+            //                }
+
+            //                if (expectedResults.Count > 0)
+            //                {
+            //                    expectedResult = string.Join("\n", expectedResults);
+            //                    i = j - 1; // Cập nhật i để bỏ qua các bước SYSTEM đã xử lý
+            //                    txtThongbao.AppendText($"Gộp ExpectedResult cho bước {numberedDescription}: {expectedResult}\r\n");
+            //                }
+
             //                steps.Add(new StepData
             //                {
             //                    UseCaseName = useCaseName,
@@ -521,17 +564,20 @@ namespace DATN
             //                    Preconditions = preconditions,
             //                    PostConditions = postConditions,
             //                    FlowType = "Basic Flow",
-            //                    Description = numberedDescription, // Sử dụng Description đã được đánh số (hoặc không nếu là SYSTEM)
-            //                    ExpectedResult = GenerateExpectedResult(description) ?? "Không có kết quả kỳ vọng",
+            //                    Description = numberedDescription,
+            //                    ExpectedResult = expectedResult,
             //                    BranchPoint = null
             //                });
-
-            //                txtThongbao.AppendText($"Đã thêm bước Basic Flow: {numberedDescription}\r\n");
+            //                txtThongbao.AppendText($"Đã thêm bước Basic Flow: {numberedDescription}, ExpectedResult: {expectedResult}\r\n");
             //            }
+            //        }
+            //        else
+            //        {
+            //            txtThongbao.AppendText($"Bỏ qua bước hệ thống tại index {i}: {description} (sẽ gộp vào ExpectedResult nếu thuộc Basic Flow)\r\n");
             //        }
             //    }
 
-            //    // Xử lý các bước Extension (Alternative Flow)
+            //    // Xử lý Extension và Alternative Flow (không gộp từ Basic Flow)
             //    foreach (var container in stepContainers)
             //    {
             //        var extensions = container.Descendants("Extension")
@@ -548,1021 +594,26 @@ namespace DATN
 
             //            if (string.IsNullOrEmpty(description) || description == "No description")
             //            {
-            //                txtThongbao.AppendText($"Bước không có mô tả hợp lệ, bỏ qua.\r\n");
+            //                txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (Extension).\r\n");
             //                continue;
             //            }
 
             //            string refStep = step.Attribute("RefStep")?.Value;
             //            int? branchPoint = null;
-
             //            if (!string.IsNullOrEmpty(refStep))
             //            {
-            //                var referencedStep = basicFlowSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
+            //                var referencedStep = allSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
             //                if (referencedStep != null)
-            //                {
-            //                    branchPoint = basicFlowSteps.IndexOf(referencedStep) + 1;
-            //                }
+            //                    branchPoint = allSteps.IndexOf(referencedStep) + 1;
             //            }
 
-            //            if (branchPoint == null)
-            //            {
-            //                branchPoint = basicFlowStepIndex; // Mặc định nhánh ở bước cuối
-            //            }
-
-            //            string flowType = "Alternative Flow";
-            //            string cleanedDescription = description.ToLower().Trim();
-            //            if (cleanedDescription.Contains("không hợp lệ") ||
-            //                cleanedDescription.Contains("lỗi") ||
-            //                cleanedDescription.Contains("không phản hồi") ||
-            //                cleanedDescription.Contains("không đầy đủ"))
-            //            {
-            //                flowType = "Exception Flow";
-            //            }
-
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = GenerateExpectedResult(description) ?? "Không có kết quả kỳ vọng";
-            //                string stepNumber = flowType == "Exception Flow" ? $"{++exceptionCounter}.1.a" : $"{basicFlowStepIndex}.a"; // Đánh số cho Exception Flow
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = flowType,
-            //                    Description = $"{stepNumber}. {description}", // Thêm số thứ tự vào Description
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = branchPoint
-            //                });
-
-            //                txtThongbao.AppendText($"Đã thêm bước: {description} (FlowType: {flowType}, StepNumber: {stepNumber})\r\n");
-            //            }
+            //            // Gán thủ công branchPoint dựa trên mô tả nếu RefStep không rõ ràng
+            //            if (description == "Lỗi kết nối với ngân hàng")
+            //                branchPoint = 1; // Liên quan đến bước 1 của Basic Flow
+            //            else if (description == "Tài khoản không hợp lệ")
+            //                branchPoint = 2; // Liên quan đến bước 2 của Basic Flow
             //            else
-            //            {
-            //                txtThongbao.AppendText($"Bước {description} đã tồn tại, bỏ qua.\r\n");
-            //            }
-            //        }
-            //    }
-
-            //    txtThongbao.AppendText($"Tổng số bước: {steps.Count}\r\n");
-            //}
-            //catch (Exception ex)
-            //{
-            //    txtThongbao.AppendText($"Lỗi khi phân tích bước: {ex.Message}\r\n");
-            //}
-            //return steps;
-
-
-
-
-
-            //var steps = new List<StepData>();
-            //var uniqueSteps = new HashSet<string>();
-
-            //try
-            //{
-            //    string useCaseName = useCase.Attribute("Name")?.Value ?? "Không xác định";
-            //    string preconditions = GetTaggedValue(useCase, "Preconditions") ?? "Không có";
-            //    string postConditions = GetTaggedValue(useCase, "Post-conditions") ?? "Không có";
-
-            //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase: {useCaseName}\r\n");
-
-            //    // Xử lý StepContainer (cho StarUML hoặc XML cũ)
-            //    var stepContainers = useCase.Descendants("StepContainer").ToList();
-            //    // Xử lý vpumlModel (cho Visual Paradigm)
-            //    var vpumlModels = useCase.Descendants("vpumlModel")
-            //        .Where(e => e.Attribute("type")?.Value == "step" || e.Attribute("type")?.Value == "alternative")
-            //        .ToList();
-
-            //    txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
-
-            //    int basicFlowStepIndex = 0;
-            //    int exceptionCounter = 0;
-            //    var basicFlowSteps = new List<XElement>();
-
-            //    // 1. Xử lý Basic Flow từ StepContainer (StarUML hoặc XML cũ)
-            //    foreach (var container in stepContainers)
-            //    {
-            //        var allSteps = container.Descendants("Step")
-            //            .Where(step => step.Name.LocalName != "Extension")
-            //            .GroupBy(step => step.Attribute("Name")?.Value)
-            //            .Select(group => group.First());
-
-            //        foreach (var step in allSteps)
-            //        {
-            //            string description = step.Attribute("Name")?.Value
-            //                ?? step.Attribute("Text")?.Value
-            //                ?? step.Attribute("Description")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (StepContainer).\r\n");
-            //                continue;
-            //            }
-
-            //            basicFlowSteps.Add(step);
-            //            bool isSystemStep = description.ToLower().Contains("system") || description.ToLower().Contains("hệ thống");
-            //            string numberedDescription = isSystemStep ? description : $"{++basicFlowStepIndex}. {description}";
-
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = "Basic Flow",
-            //                    Description = numberedDescription,
-            //                    ExpectedResult = GetStepExpectedResult(step, description) ?? "Không có kết quả kỳ vọng",
-            //                    BranchPoint = null
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước Basic Flow (StepContainer): {numberedDescription}\r\n");
-            //            }
-            //        }
-            //    }
-
-            //    // 2. Xử lý Visual Paradigm XML (vpumlModel)
-            //    if (vpumlModels.Any())
-            //    {
-            //        // Xử lý Basic Flow từ vpumlModel
-            //        var basicFlowModels = vpumlModels.Where(m => m.Attribute("type")?.Value == "step").ToList();
-            //        foreach (var vpumlModel in basicFlowModels)
-            //        {
-            //            // Duyệt tất cả thẻ step và các thẻ con
-            //            var stepElements = vpumlModel.Descendants("step").ToList();
-            //            foreach (var step in stepElements)
-            //            {
-            //                string description = step.Attribute("name")?.Value
-            //                    ?? step.Element("description")?.Value
-            //                    ?? step.Descendants("description").FirstOrDefault()?.Value
-            //                    ?? step.Value.Trim()
-            //                    ?? "No description";
-
-            //                if (string.IsNullOrEmpty(description) || description == "No description")
-            //                {
-            //                    txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (vpumlModel, step).\r\n");
-            //                    continue;
-            //                }
-
-            //                bool isSystemStep = description.ToLower().Contains("system") || description.ToLower().Contains("hệ thống");
-            //                string numberedDescription = isSystemStep ? description : $"{++basicFlowStepIndex}. {description}";
-
-            //                if (uniqueSteps.Add(description))
-            //                {
-            //                    basicFlowSteps.Add(step);
-            //                    steps.Add(new StepData
-            //                    {
-            //                        UseCaseName = useCaseName,
-            //                        Level = "Không xác định",
-            //                        Preconditions = preconditions,
-            //                        PostConditions = postConditions,
-            //                        FlowType = "Basic Flow",
-            //                        Description = numberedDescription,
-            //                        ExpectedResult = GetStepExpectedResult(step, description) ?? "Không có kết quả kỳ vọng",
-            //                        BranchPoint = null
-            //                    });
-            //                    txtThongbao.AppendText($"Đã thêm bước Basic Flow (vpumlModel, step): {numberedDescription}\r\n");
-            //                }
-            //            }
-            //        }
-
-            //        // Xử lý Alternative/Exception Flow từ vpumlModel
-            //        var altFlowModels = vpumlModels.Where(m => m.Attribute("type")?.Value == "alternative").ToList();
-            //        foreach (var vpumlModel in altFlowModels)
-            //        {
-            //            // Duyệt tất cả thẻ alternativeFlow và các thẻ con
-            //            var stepElements = vpumlModel.Descendants("alternativeFlow").ToList();
-            //            foreach (var step in stepElements)
-            //            {
-            //                string description = step.Attribute("name")?.Value
-            //                    ?? step.Element("description")?.Value
-            //                    ?? step.Descendants("description").FirstOrDefault()?.Value
-            //                    ?? step.Value.Trim()
-            //                    ?? "No description";
-
-            //                if (string.IsNullOrEmpty(description) || description == "No description")
-            //                {
-            //                    txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (vpumlModel, alternativeFlow).\r\n");
-            //                    continue;
-            //                }
-
-            //                // Phân loại luồng
-            //                string cleanedDescription = description.ToLower().Trim();
-            //                string flowType = cleanedDescription.Contains("không hợp lệ") ||
-            //                                 cleanedDescription.Contains("lỗi") ||
-            //                                 cleanedDescription.Contains("không phản hồi") ||
-            //                                 cleanedDescription.Contains("không đầy đủ") ||
-            //                                 cleanedDescription.Contains("thất bại") ? "Exception Flow" : "Alternative Flow";
-
-            //                // Xác định BranchPoint
-            //                string refStep = step.Attribute("RefStep")?.Value;
-            //                int? branchPoint = null;
-            //                if (!string.IsNullOrEmpty(refStep))
-            //                {
-            //                    var referencedStep = basicFlowSteps.FirstOrDefault(s => (s.Attribute("name")?.Value ?? s.Value) == refStep);
-            //                    if (referencedStep != null)
-            //                        branchPoint = basicFlowSteps.IndexOf(referencedStep) + 1;
-            //                }
-            //                branchPoint = branchPoint ?? basicFlowStepIndex;
-
-            //                // Đánh số bước
-            //                string stepNumber = flowType == "Exception Flow" ? $"{++exceptionCounter}.1.a" : $"{basicFlowStepIndex}.a";
-
-            //                if (uniqueSteps.Add(description))
-            //                {
-            //                    steps.Add(new StepData
-            //                    {
-            //                        UseCaseName = useCaseName,
-            //                        Level = "Không xác định",
-            //                        Preconditions = preconditions,
-            //                        PostConditions = postConditions,
-            //                        FlowType = flowType,
-            //                        Description = $"{stepNumber}. {description}",
-            //                        ExpectedResult = GetStepExpectedResult(step, description) ?? "Không có kết quả kỳ vọng",
-            //                        BranchPoint = branchPoint
-            //                    });
-            //                    txtThongbao.AppendText($"Đã thêm bước (vpumlModel, alternativeFlow): {description} (FlowType: {flowType}, StepNumber: {stepNumber}, BranchPoint: {branchPoint})\r\n");
-            //                }
-            //            }
-            //        }
-            //    }
-
-            //    // 3. Xử lý Extension từ StepContainer (StarUML hoặc XML cũ)
-            //    foreach (var container in stepContainers)
-            //    {
-            //        var extensions = container.Descendants("Extension")
-            //            .GroupBy(step => step.Attribute("Name")?.Value)
-            //            .Select(group => group.First());
-
-            //        foreach (var step in extensions)
-            //        {
-            //            string description = step.Attribute("Name")?.Value
-            //                ?? step.Attribute("Text")?.Value
-            //                ?? step.Attribute("Description")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (Extension).\r\n");
-            //                continue;
-            //            }
-
-            //            string refStep = step.Attribute("RefStep")?.Value;
-            //            int? branchPoint = null;
-            //            if (!string.IsNullOrEmpty(refStep))
-            //            {
-            //                var referencedStep = basicFlowSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
-            //                if (referencedStep != null)
-            //                    branchPoint = basicFlowSteps.IndexOf(referencedStep) + 1;
-            //            }
-            //            branchPoint = branchPoint ?? basicFlowStepIndex;
-
-            //            string flowType = "Alternative Flow";
-            //            string cleanedDescription = description.ToLower().Trim();
-            //            if (cleanedDescription.Contains("không hợp lệ") ||
-            //                cleanedDescription.Contains("lỗi") ||
-            //                cleanedDescription.Contains("không phản hồi") ||
-            //                cleanedDescription.Contains("không đầy đủ"))
-            //                flowType = "Exception Flow";
-
-            //            string stepNumber = flowType == "Exception Flow" ? $"{++exceptionCounter}.1.a" : $"{basicFlowStepIndex}.a";
-
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = flowType,
-            //                    Description = $"{stepNumber}. {description}",
-            //                    ExpectedResult = GetStepExpectedResult(step, description) ?? "Không có kết quả kỳ vọng",
-            //                    BranchPoint = branchPoint
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước (Extension): {description} (FlowType: {flowType}, StepNumber: {stepNumber})\r\n");
-            //            }
-            //        }
-            //    }
-
-            //    txtThongbao.AppendText($"Tổng số bước: {steps.Count}\r\n");
-            //}
-            //catch (Exception ex)
-            //{
-            //    txtThongbao.AppendText($"Lỗi khi phân tích bước: {ex.Message}\r\n");
-            //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
-            //}
-            //return steps;
-
-
-
-            //var steps = new List<StepData>();
-            //var uniqueSteps = new HashSet<string>();
-
-            //try
-            //{
-            //    string useCaseName = useCase.Attribute("Name")?.Value ?? "Không xác định";
-            //    string preconditions = GetTaggedValue(useCase, "Preconditions") ?? "Không có";
-            //    string postConditions = GetTaggedValue(useCase, "Post-conditions") ?? "Không có";
-
-            //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase: {useCaseName}\r\n");
-
-            //    var stepContainers = useCase.Descendants("StepContainer").ToList();
-            //    var vpumlModels = useCase.Descendants("vpumlModel")
-            //        .Where(e => e.Attribute("type")?.Value == "step" || e.Attribute("type")?.Value == "alternative")
-            //        .ToList();
-
-            //    txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
-
-            //    int basicFlowStepIndex = 0;
-
-            //    var allSteps = new List<XElement>();
-            //    foreach (var container in stepContainers)
-            //    {
-            //        allSteps.AddRange(container.Descendants("Step").Where(step => step.Name.LocalName != "Extension"));
-            //    }
-            //    foreach (var model in vpumlModels.Where(m => m.Attribute("type")?.Value == "step"))
-            //    {
-            //        allSteps.AddRange(model.Descendants("step"));
-            //    }
-
-            //    for (int i = 0; i < allSteps.Count; i++)
-            //    {
-            //        var step = allSteps[i];
-            //        string description = step.Attribute("Name")?.Value
-            //            ?? step.Attribute("Text")?.Value
-            //            ?? step.Attribute("Description")?.Value
-            //            ?? step.Value.Trim()
-            //            ?? "No description";
-
-            //        if (string.IsNullOrEmpty(description) || description == "No description")
-            //        {
-            //            txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ tại index {i}: {description}\r\n");
-            //            continue;
-            //        }
-
-            //        // Nhận diện bước "ATM" hoặc "hệ thống"
-            //        bool isSystemAction = description.ToLower().Contains("atm") || description.ToLower().Contains("hệ thống") || description.ToLower().Contains("hiển thị");
-
-            //        txtThongbao.AppendText($"Kiểm tra bước tại index {i}: {description}, IsSystemAction: {isSystemAction}\r\n");
-
-            //        if (!isSystemAction)
-            //        {
-            //            // Bước chính (không phải "ATM" hoặc "hệ thống")
-            //            basicFlowStepIndex++;
-            //            string numberedDescription = $"{basicFlowStepIndex}. {description}";
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = "Không có kết quả kỳ vọng";
-
-            //                // Tìm bước "ATM"/"hệ thống" ngay sau bước chính
-            //                if (i + 1 < allSteps.Count)
-            //                {
-            //                    int j = i + 1;
-            //                    var nextStep = allSteps[j];
-            //                    string nextDescription = nextStep.Attribute("Name")?.Value
-            //                        ?? nextStep.Attribute("Text")?.Value
-            //                        ?? nextStep.Attribute("Description")?.Value
-            //                        ?? nextStep.Value.Trim()
-            //                        ?? "No description";
-
-            //                    if (nextDescription.ToLower().Contains("atm") || nextDescription.ToLower().Contains("hệ thống") || nextDescription.ToLower().Contains("hiển thị"))
-            //                    {
-            //                        expectedResult = nextDescription.Trim();
-            //                        i = j; // Bỏ qua bước "ATM"/"hệ thống" đã xử lý
-            //                        txtThongbao.AppendText($"Gộp ExpectedResult cho bước {numberedDescription}: {expectedResult}\r\n");
-            //                    }
-            //                }
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = "Basic Flow",
-            //                    Description = numberedDescription,
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = null
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước Basic Flow: {numberedDescription}, ExpectedResult: {expectedResult}\r\n");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            // Bỏ qua bước "ATM"/"hệ thống" vì nó sẽ được gộp vào ExpectedResult của bước trước
-            //            txtThongbao.AppendText($"Bỏ qua bước hệ thống tại index {i}: {description} (sẽ gộp vào ExpectedResult)\r\n");
-            //        }
-            //    }
-
-            //    // Xử lý Extension và Alternative Flow
-            //    foreach (var container in stepContainers)
-            //    {
-            //        var extensions = container.Descendants("Extension")
-            //            .GroupBy(step => step.Attribute("Name")?.Value)
-            //            .Select(group => group.First());
-
-            //        foreach (var step in extensions)
-            //        {
-            //            string description = step.Attribute("Name")?.Value
-            //                ?? step.Attribute("Text")?.Value
-            //                ?? step.Attribute("Description")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (Extension).\r\n");
-            //                continue;
-            //            }
-
-            //            string refStep = step.Attribute("RefStep")?.Value;
-            //            int? branchPoint = null;
-            //            if (!string.IsNullOrEmpty(refStep))
-            //            {
-            //                var referencedStep = allSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
-            //                if (referencedStep != null)
-            //                    branchPoint = allSteps.IndexOf(referencedStep) + 1;
-            //            }
-            //            branchPoint = branchPoint ?? basicFlowStepIndex;
-
-            //            string flowType = "Alternative Flow";
-            //            string cleanedDescription = description.ToLower().Trim();
-            //            if (cleanedDescription.Contains("không hợp lệ") || cleanedDescription.Contains("lỗi"))
-            //                flowType = "Exception Flow";
-
-            //            string stepNumber = flowType == "Exception Flow" ? $"{basicFlowStepIndex}.1.a" : $"{basicFlowStepIndex}.a";
-
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = "Không có kết quả kỳ vọng";
-            //                if (description == "Lỗi kết nối với ngân hàng")
-            //                    expectedResult = "Hệ thống hiển thị thông báo lỗi và yêu cầu thực hiện lại thao tác.";
-            //                else if (description == "Tài khoản không hợp lệ")
-            //                    expectedResult = "Hệ thống phát hiện dữ liệu không hợp lệ, hiển thị thông báo lỗi và yêu cầu nhập lại.";
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = flowType,
-            //                    Description = $"{stepNumber}. {description}",
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = branchPoint
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước {flowType}: {description}, ExpectedResult: {expectedResult}\r\n");
-            //            }
-            //        }
-            //    }
-
-            //    txtThongbao.AppendText($"Tổng số bước: {steps.Count}\r\n");
-            //}
-            //catch (Exception ex)
-            //{
-            //    txtThongbao.AppendText($"Lỗi khi phân tích bước: {ex.Message}\r\n");
-            //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
-            //}
-            //return steps;
-
-
-
-            //var steps = new List<StepData>();
-            //var uniqueSteps = new HashSet<string>();
-
-            //try
-            //{
-            //    string useCaseName = useCase.Attribute("Name")?.Value ?? "Không xác định";
-            //    string preconditions = GetTaggedValue(useCase, "Preconditions") ?? "Không có";
-            //    string postConditions = GetTaggedValue(useCase, "Post-conditions") ?? "Không có";
-
-            //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase: {useCaseName}\r\n");
-
-            //    var stepContainers = useCase.Descendants("StepContainer").ToList();
-            //    var vpumlModels = useCase.Descendants("vpumlModel")
-            //        .Where(e => e.Attribute("type")?.Value == "step" || e.Attribute("type")?.Value == "alternative")
-            //        .ToList();
-
-            //    txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
-
-            //    int basicFlowStepIndex = 0;
-
-            //    var allSteps = new List<XElement>();
-            //    foreach (var container in stepContainers)
-            //    {
-            //        allSteps.AddRange(container.Descendants("Step").Where(step => step.Name.LocalName != "Extension"));
-            //    }
-            //    foreach (var model in vpumlModels.Where(m => m.Attribute("type")?.Value == "step"))
-            //    {
-            //        allSteps.AddRange(model.Descendants("step"));
-            //    }
-
-            //    for (int i = 0; i < allSteps.Count; i++)
-            //    {
-            //        var step = allSteps[i];
-            //        string description = step.Attribute("Name")?.Value
-            //            ?? step.Attribute("Text")?.Value
-            //            ?? step.Attribute("Description")?.Value
-            //            ?? step.Value.Trim()
-            //            ?? "No description";
-
-            //        if (string.IsNullOrEmpty(description) || description == "No description")
-            //        {
-            //            txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ tại index {i}: {description}\r\n");
-            //            continue;
-            //        }
-
-            //        // Nhận diện bước "ATM" hoặc "hệ thống"
-            //        bool isSystemAction = description.ToLower().Contains("atm") || description.ToLower().Contains("hệ thống") || description.ToLower().Contains("hiển thị");
-
-            //        txtThongbao.AppendText($"Kiểm tra bước tại index {i}: {description}, IsSystemAction: {isSystemAction}\r\n");
-
-            //        if (!isSystemAction)
-            //        {
-            //            // Bước chính (không phải "ATM" hoặc "hệ thống")
-            //            basicFlowStepIndex++;
-            //            string numberedDescription = $"{basicFlowStepIndex}. {description}";
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = "Không có kết quả kỳ vọng";
-            //                List<string> expectedResults = new List<string>();
-
-            //                // Tìm tất cả các bước "ATM"/"hệ thống" liên tiếp ngay sau bước chính
-            //                int j = i + 1;
-            //                while (j < allSteps.Count)
-            //                {
-            //                    var nextStep = allSteps[j];
-            //                    string nextDescription = nextStep.Attribute("Name")?.Value
-            //                        ?? nextStep.Attribute("Text")?.Value
-            //                        ?? nextStep.Attribute("Description")?.Value
-            //                        ?? nextStep.Value.Trim()
-            //                        ?? "No description";
-
-            //                    if (nextDescription.ToLower().Contains("atm") || nextDescription.ToLower().Contains("hệ thống") || nextDescription.ToLower().Contains("hiển thị"))
-            //                    {
-            //                        expectedResults.Add(nextDescription.Trim());
-            //                        j++;
-            //                    }
-            //                    else
-            //                    {
-            //                        break; // Thoát nếu gặp bước không phải "ATM"/"hệ thống"
-            //                    }
-            //                }
-
-            //                if (expectedResults.Count > 0)
-            //                {
-            //                    expectedResult = string.Join("\n", expectedResults); // Nối các ExpectedResult bằng ký tự xuống dòng
-            //                    i = j - 1; // Cập nhật i để bỏ qua các bước "ATM"/"hệ thống" đã xử lý
-            //                    txtThongbao.AppendText($"Gộp ExpectedResult cho bước {numberedDescription}: {expectedResult}\r\n");
-            //                }
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = "Basic Flow",
-            //                    Description = numberedDescription,
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = null
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước Basic Flow: {numberedDescription}, ExpectedResult: {expectedResult}\r\n");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            // Bỏ qua bước "ATM"/"hệ thống" vì nó sẽ được gộp vào ExpectedResult của bước trước
-            //            txtThongbao.AppendText($"Bỏ qua bước hệ thống tại index {i}: {description} (sẽ gộp vào ExpectedResult)\r\n");
-            //        }
-            //    }
-
-            //    // Xử lý Extension và Alternative Flow
-            //    foreach (var container in stepContainers)
-            //    {
-            //        var extensions = container.Descendants("Extension")
-            //            .GroupBy(step => step.Attribute("Name")?.Value)
-            //            .Select(group => group.First());
-
-            //        foreach (var step in extensions)
-            //        {
-            //            string description = step.Attribute("Name")?.Value
-            //                ?? step.Attribute("Text")?.Value
-            //                ?? step.Attribute("Description")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (Extension).\r\n");
-            //                continue;
-            //            }
-
-            //            string refStep = step.Attribute("RefStep")?.Value;
-            //            int? branchPoint = null;
-            //            if (!string.IsNullOrEmpty(refStep))
-            //            {
-            //                var referencedStep = allSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
-            //                if (referencedStep != null)
-            //                    branchPoint = allSteps.IndexOf(referencedStep) + 1;
-            //            }
-            //            branchPoint = branchPoint ?? basicFlowStepIndex;
-
-            //            string flowType = "Alternative Flow";
-            //            string cleanedDescription = description.ToLower().Trim();
-            //            if (cleanedDescription.Contains("không hợp lệ") || cleanedDescription.Contains("lỗi"))
-            //                flowType = "Exception Flow";
-
-            //            string stepNumber = flowType == "Exception Flow" ? $"{basicFlowStepIndex}.1.a" : $"{basicFlowStepIndex}.a";
-
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = "Không có kết quả kỳ vọng";
-            //                if (description == "Lỗi kết nối với ngân hàng")
-            //                    expectedResult = "Hệ thống hiển thị thông báo lỗi và yêu cầu thực hiện lại thao tác.";
-            //                else if (description == "Tài khoản không hợp lệ")
-            //                    expectedResult = "Hệ thống phát hiện dữ liệu không hợp lệ, hiển thị thông báo lỗi và yêu cầu nhập lại.";
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = flowType,
-            //                    Description = $"{stepNumber}. {description}",
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = branchPoint
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước {flowType}: {description}, ExpectedResult: {expectedResult}\r\n");
-            //            }
-            //        }
-            //    }
-
-            //    txtThongbao.AppendText($"Tổng số bước: {steps.Count}\r\n");
-            //}
-            //catch (Exception ex)
-            //{
-            //    txtThongbao.AppendText($"Lỗi khi phân tích bước: {ex.Message}\r\n");
-            //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
-            //}
-            //return steps;
-
-
-
-
-
-
-            //var steps = new List<StepData>();
-            //var uniqueSteps = new HashSet<string>();
-
-            //try
-            //{
-            //    string useCaseName = useCase.Attribute("Name")?.Value ?? "Không xác định";
-            //    string preconditions = GetTaggedValue(useCase, "Preconditions") ?? "Không có";
-            //    string postConditions = GetTaggedValue(useCase, "Post-conditions") ?? "Không có";
-
-            //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase: {useCaseName}\r\n");
-
-            //    var stepContainers = useCase.Descendants("StepContainer").ToList();
-            //    var vpumlModels = useCase.Descendants("vpumlModel")
-            //        .Where(e => e.Attribute("type")?.Value == "step" || e.Attribute("type")?.Value == "alternative")
-            //        .ToList();
-
-            //    txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
-
-            //    int basicFlowStepIndex = 0;
-
-            //    var allSteps = new List<XElement>();
-            //    foreach (var container in stepContainers)
-            //    {
-            //        allSteps.AddRange(container.Descendants("Step").Where(step => step.Name.LocalName != "Extension"));
-            //    }
-            //    foreach (var model in vpumlModels.Where(m => m.Attribute("type")?.Value == "step"))
-            //    {
-            //        allSteps.AddRange(model.Descendants("step"));
-            //    }
-
-            //    // Xử lý Basic Flow
-            //    for (int i = 0; i < allSteps.Count; i++)
-            //    {
-            //        var step = allSteps[i];
-            //        string description = step.Attribute("Name")?.Value
-            //            ?? step.Attribute("Text")?.Value
-            //            ?? step.Attribute("Description")?.Value
-            //            ?? step.Value.Trim()
-            //            ?? "No description";
-
-            //        if (string.IsNullOrEmpty(description) || description == "No description")
-            //        {
-            //            txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ tại index {i}: {description}\r\n");
-            //            continue;
-            //        }
-
-            //        bool isSystemAction = description.ToLower().Contains("atm") || description.ToLower().Contains("hệ thống") || description.ToLower().Contains("hiển thị");
-
-            //        txtThongbao.AppendText($"Kiểm tra bước tại index {i}: {description}, IsSystemAction: {isSystemAction}\r\n");
-
-            //        if (!isSystemAction)
-            //        {
-            //            basicFlowStepIndex++;
-            //            string numberedDescription = $"{basicFlowStepIndex}. {description}";
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = "Không có kết quả kỳ vọng";
-            //                List<string> expectedResults = new List<string>();
-
-            //                // Tìm các bước SYSTEM liên tiếp ngay sau (chỉ trong Basic Flow)
-            //                int j = i + 1;
-            //                while (j < allSteps.Count)
-            //                {
-            //                    var nextStep = allSteps[j];
-            //                    string nextDescription = nextStep.Attribute("Name")?.Value
-            //                        ?? nextStep.Attribute("Text")?.Value
-            //                        ?? nextStep.Attribute("Description")?.Value
-            //                        ?? nextStep.Value.Trim()
-            //                        ?? "No description";
-
-            //                    bool isNextSystemAction = nextDescription.ToLower().Contains("atm") || nextDescription.ToLower().Contains("hệ thống") || nextDescription.ToLower().Contains("hiển thị");
-            //                    if (isNextSystemAction)
-            //                    {
-            //                        // Chỉ gộp nếu không phải là thông báo lỗi (thuộc Exception Flow)
-            //                        if (!nextDescription.ToLower().Contains("lỗi") && !nextDescription.ToLower().Contains("error"))
-            //                        {
-            //                            expectedResults.Add(nextDescription.Trim());
-            //                            j++;
-            //                        }
-            //                        else
-            //                        {
-            //                            break; // Dừng nếu gặp thông báo lỗi, tránh gộp nhầm
-            //                        }
-            //                    }
-            //                    else
-            //                    {
-            //                        break; // Thoát nếu gặp bước không phải SYSTEM
-            //                    }
-            //                }
-
-            //                if (expectedResults.Count > 0)
-            //                {
-            //                    expectedResult = string.Join("\n", expectedResults);
-            //                    i = j - 1; // Cập nhật i để bỏ qua các bước SYSTEM đã xử lý
-            //                    txtThongbao.AppendText($"Gộp ExpectedResult cho bước {numberedDescription}: {expectedResult}\r\n");
-            //                }
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = "Basic Flow",
-            //                    Description = numberedDescription,
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = null
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước Basic Flow: {numberedDescription}, ExpectedResult: {expectedResult}\r\n");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            txtThongbao.AppendText($"Bỏ qua bước hệ thống tại index {i}: {description} (sẽ gộp vào ExpectedResult nếu thuộc Basic Flow)\r\n");
-            //        }
-            //    }
-
-            //    // Xử lý Extension và Alternative Flow (không gộp từ Basic Flow)
-            //    foreach (var container in stepContainers)
-            //    {
-            //        var extensions = container.Descendants("Extension")
-            //            .GroupBy(step => step.Attribute("Name")?.Value)
-            //            .Select(group => group.First());
-
-            //        foreach (var step in extensions)
-            //        {
-            //            string description = step.Attribute("Name")?.Value
-            //                ?? step.Attribute("Text")?.Value
-            //                ?? step.Attribute("Description")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (Extension).\r\n");
-            //                continue;
-            //            }
-
-            //            string refStep = step.Attribute("RefStep")?.Value;
-            //            int? branchPoint = null;
-            //            if (!string.IsNullOrEmpty(refStep))
-            //            {
-            //                var referencedStep = allSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
-            //                if (referencedStep != null)
-            //                    branchPoint = allSteps.IndexOf(referencedStep) + 1;
-            //            }
-            //            branchPoint = branchPoint ?? basicFlowStepIndex;
-
-            //            string flowType = "Alternative Flow";
-            //            string cleanedDescription = description.ToLower().Trim();
-            //            if (cleanedDescription.Contains("không hợp lệ") || cleanedDescription.Contains("lỗi"))
-            //                flowType = "Exception Flow";
-
-            //            string stepNumber = flowType == "Exception Flow" ? $"{basicFlowStepIndex}.1.a" : $"{basicFlowStepIndex}.a";
-
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
-            //                // Gán ExpectedResult cụ thể cho từng bước Exception Flow
-            //                if (description == "Lỗi kết nối với ngân hàng" || description == "Tài khoản không hợp lệ")
-            //                {
-            //                    expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
-            //                }
-            //                else if (description == "Lỗi khác")
-            //                {
-            //                    expectedResult = "Hệ thống hiển thị thông báo lỗi khác và quay lại menu chính.";
-            //                }
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = flowType,
-            //                    Description = $"{stepNumber}. {description}",
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = branchPoint
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước {flowType}: {description}, ExpectedResult: {expectedResult}\r\n");
-            //            }
-            //        }
-            //    }
-
-            //    txtThongbao.AppendText($"Tổng số bước: {steps.Count}\r\n");
-            //}
-            //catch (Exception ex)
-            //{
-            //    txtThongbao.AppendText($"Lỗi khi phân tích bước: {ex.Message}\r\n");
-            //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
-            //}
-            //return steps;
-
-
-
-
-            //ổn nhất
-            //var steps = new List<StepData>();
-            //var uniqueSteps = new HashSet<string>();
-
-            //try
-            //{
-            //    string useCaseName = useCase.Attribute("Name")?.Value ?? "Không xác định";
-            //    string preconditions = GetTaggedValue(useCase, "Preconditions") ?? "Không có";
-            //    string postConditions = GetTaggedValue(useCase, "Post-conditions") ?? "Không có";
-
-            //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase: {useCaseName}\r\n");
-
-            //    var stepContainers = useCase.Descendants("StepContainer").ToList();
-            //    var vpumlModels = useCase.Descendants("vpumlModel")
-            //        .Where(e => e.Attribute("type")?.Value == "step" || e.Attribute("type")?.Value == "alternative")
-            //        .ToList();
-
-            //    txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
-
-            //    int basicFlowStepIndex = 0;
-
-            //    var allSteps = new List<XElement>();
-            //    foreach (var container in stepContainers)
-            //    {
-            //        allSteps.AddRange(container.Descendants("Step").Where(step => step.Name.LocalName != "Extension"));
-            //    }
-            //    foreach (var model in vpumlModels.Where(m => m.Attribute("type")?.Value == "step"))
-            //    {
-            //        allSteps.AddRange(model.Descendants("step"));
-            //    }
-
-            //    // Xử lý Basic Flow
-            //    for (int i = 0; i < allSteps.Count; i++)
-            //    {
-            //        var step = allSteps[i];
-            //        string description = step.Attribute("Name")?.Value
-            //            ?? step.Attribute("Text")?.Value
-            //            ?? step.Attribute("Description")?.Value
-            //            ?? step.Value.Trim()
-            //            ?? "No description";
-
-            //        if (string.IsNullOrEmpty(description) || description == "No description")
-            //        {
-            //            txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ tại index {i}: {description}\r\n");
-            //            continue;
-            //        }
-
-            //        bool isSystemAction = description.ToLower().Contains("atm") || description.ToLower().Contains("hệ thống") || description.ToLower().Contains("hiển thị");
-
-            //        txtThongbao.AppendText($"Kiểm tra bước tại index {i}: {description}, IsSystemAction: {isSystemAction}\r\n");
-
-            //        if (!isSystemAction)
-            //        {
-            //            basicFlowStepIndex++;
-            //            string numberedDescription = $"{basicFlowStepIndex}. {description}";
-            //            if (uniqueSteps.Add(description))
-            //            {
-            //                string expectedResult = "Không có kết quả kỳ vọng";
-            //                List<string> expectedResults = new List<string>();
-
-            //                // Tìm các bước SYSTEM liên tiếp ngay sau (chỉ trong Basic Flow)
-            //                int j = i + 1;
-            //                while (j < allSteps.Count)
-            //                {
-            //                    var nextStep = allSteps[j];
-            //                    string nextDescription = nextStep.Attribute("Name")?.Value
-            //                        ?? nextStep.Attribute("Text")?.Value
-            //                        ?? nextStep.Attribute("Description")?.Value
-            //                        ?? nextStep.Value.Trim()
-            //                        ?? "No description";
-
-            //                    bool isNextSystemAction = nextDescription.ToLower().Contains("atm") || nextDescription.ToLower().Contains("hệ thống") || nextDescription.ToLower().Contains("hiển thị");
-            //                    if (isNextSystemAction)
-            //                    {
-            //                        // Chỉ gộp nếu không phải là thông báo lỗi (thuộc Exception Flow)
-            //                        if (!nextDescription.ToLower().Contains("lỗi") && !nextDescription.ToLower().Contains("error"))
-            //                        {
-            //                            expectedResults.Add(nextDescription.Trim());
-            //                            j++;
-            //                        }
-            //                        else
-            //                        {
-            //                            break; // Dừng nếu gặp thông báo lỗi, tránh gộp nhầm
-            //                        }
-            //                    }
-            //                    else
-            //                    {
-            //                        break; // Thoát nếu gặp bước không phải SYSTEM
-            //                    }
-            //                }
-
-            //                if (expectedResults.Count > 0)
-            //                {
-            //                    expectedResult = string.Join("\n", expectedResults);
-            //                    i = j - 1; // Cập nhật i để bỏ qua các bước SYSTEM đã xử lý
-            //                    txtThongbao.AppendText($"Gộp ExpectedResult cho bước {numberedDescription}: {expectedResult}\r\n");
-            //                }
-
-            //                steps.Add(new StepData
-            //                {
-            //                    UseCaseName = useCaseName,
-            //                    Level = "Không xác định",
-            //                    Preconditions = preconditions,
-            //                    PostConditions = postConditions,
-            //                    FlowType = "Basic Flow",
-            //                    Description = numberedDescription,
-            //                    ExpectedResult = expectedResult,
-            //                    BranchPoint = null
-            //                });
-            //                txtThongbao.AppendText($"Đã thêm bước Basic Flow: {numberedDescription}, ExpectedResult: {expectedResult}\r\n");
-            //            }
-            //        }
-            //        else
-            //        {
-            //            txtThongbao.AppendText($"Bỏ qua bước hệ thống tại index {i}: {description} (sẽ gộp vào ExpectedResult nếu thuộc Basic Flow)\r\n");
-            //        }
-            //    }
-
-            //    // Xử lý Extension và Alternative Flow (không gộp từ Basic Flow)
-            //    foreach (var container in stepContainers)
-            //    {
-            //        var extensions = container.Descendants("Extension")
-            //            .GroupBy(step => step.Attribute("Name")?.Value)
-            //            .Select(group => group.First());
-
-            //        foreach (var step in extensions)
-            //        {
-            //            string description = step.Attribute("Name")?.Value
-            //                ?? step.Attribute("Text")?.Value
-            //                ?? step.Attribute("Description")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (Extension).\r\n");
-            //                continue;
-            //            }
-
-            //            string refStep = step.Attribute("RefStep")?.Value;
-            //            int? branchPoint = null;
-            //            if (!string.IsNullOrEmpty(refStep))
-            //            {
-            //                var referencedStep = allSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
-            //                if (referencedStep != null)
-            //                    branchPoint = allSteps.IndexOf(referencedStep) + 1;
-            //            }
-            //            branchPoint = branchPoint ?? basicFlowStepIndex;
+            //                branchPoint = branchPoint ?? 1; // Mặc định gắn với bước 1 nếu không xác định được
 
             //            string flowType = "Alternative Flow";
             //            string cleanedDescription = description.ToLower().Trim();
@@ -1572,7 +623,7 @@ namespace DATN
             //            string stepNumber;
             //            if (flowType == "Exception Flow")
             //            {
-            //                // Điều chỉnh số bước dựa trên branchPoint
+            //                // Điều chỉnh số bước dựa trên branchPoint và mô tả
             //                if (description == "Lỗi kết nối với ngân hàng" && branchPoint == 1)
             //                    stepNumber = "1.1.a";
             //                else if (description == "Tài khoản không hợp lệ" && branchPoint == 2)
@@ -1625,8 +676,231 @@ namespace DATN
 
 
 
+
+            //ổn
+            //var steps = new List<StepData>();
+            //var uniqueSteps = new HashSet<string>();
+            //var basicFlowDescriptions = new List<string>(); // Lưu mô tả của các bước Basic Flow
+
+            //try
+            //{
+            //    string useCaseName = useCase.Attribute("Name")?.Value ?? "Không xác định";
+            //    string preconditions = GetTaggedValue(useCase, "Preconditions") ?? "Không có";
+            //    string postConditions = GetTaggedValue(useCase, "Post-conditions") ?? "Không có";
+
+            //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase: {useCaseName}\r\n");
+
+            //    var stepContainers = useCase.Descendants("StepContainer").ToList();
+            //    var vpumlModels = useCase.Descendants("vpumlModel")
+            //        .Where(e => e.Attribute("type")?.Value == "step")
+            //        .ToList();
+
+            //    txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
+
+            //    var allSteps = new List<XElement>();
+            //    foreach (var container in stepContainers)
+            //    {
+            //        allSteps.AddRange(container.Descendants("Step").Where(step => step.Name.LocalName != "Extension"));
+            //    }
+            //    foreach (var model in vpumlModels)
+            //    {
+            //        allSteps.AddRange(model.Descendants("step"));
+            //    }
+
+            //    // Thu thập tất cả các bước Basic Flow trước
+            //    int basicFlowStepIndex = 0;
+            //    var basicFlowSteps = new List<StepData>();
+            //    for (int i = 0; i < allSteps.Count; i++)
+            //    {
+            //        var step = allSteps[i];
+            //        string description = step.Attribute("Name")?.Value
+            //            ?? step.Attribute("Text")?.Value
+            //            ?? step.Attribute("Description")?.Value
+            //            ?? step.Value.Trim()
+            //            ?? "No description";
+
+            //        if (string.IsNullOrEmpty(description) || description == "No description")
+            //        {
+            //            continue;
+            //        }
+
+            //        bool isSystemAction = description.ToLower().Contains("atm") || description.ToLower().Contains("hệ thống") || description.ToLower().Contains("hiển thị");
+
+            //        if (!isSystemAction)
+            //        {
+            //            basicFlowStepIndex++;
+            //            string numberedDescription = $"{basicFlowStepIndex}. {description}";
+            //            if (uniqueSteps.Add(description))
+            //            {
+            //                string expectedResult = "Không có kết quả kỳ vọng";
+            //                List<string> expectedResults = new List<string>();
+
+            //                int j = i + 1;
+            //                while (j < allSteps.Count)
+            //                {
+            //                    var nextStep = allSteps[j];
+            //                    string nextDescription = nextStep.Attribute("Name")?.Value
+            //                        ?? nextStep.Attribute("Text")?.Value
+            //                        ?? nextStep.Attribute("Description")?.Value
+            //                        ?? nextStep.Value.Trim()
+            //                        ?? "No description";
+
+            //                    bool isNextSystemAction = nextDescription.ToLower().Contains("atm") || nextDescription.ToLower().Contains("hệ thống") || nextDescription.ToLower().Contains("hiển thị");
+            //                    if (isNextSystemAction)
+            //                    {
+            //                        if (!nextDescription.ToLower().Contains("lỗi") && !nextDescription.ToLower().Contains("error"))
+            //                        {
+            //                            expectedResults.Add(nextDescription.Trim());
+            //                            j++;
+            //                        }
+            //                        else
+            //                        {
+            //                            break;
+            //                        }
+            //                    }
+            //                    else
+            //                    {
+            //                        break;
+            //                    }
+            //                }
+
+            //                if (expectedResults.Count > 0)
+            //                {
+            //                    expectedResult = string.Join("\n", expectedResults);
+            //                    i = j - 1;
+            //                }
+
+            //                var stepData = new StepData
+            //                {
+            //                    UseCaseName = useCaseName,
+            //                    Level = "Không xác định",
+            //                    Preconditions = preconditions,
+            //                    PostConditions = postConditions,
+            //                    FlowType = "Basic Flow",
+            //                    Description = numberedDescription,
+            //                    ExpectedResult = expectedResult,
+            //                    BranchPoint = null
+            //                };
+            //                basicFlowSteps.Add(stepData);
+            //                basicFlowDescriptions.Add(description); // Lưu mô tả để so sánh với RefStep
+            //            }
+            //        }
+            //    }
+
+            //    // Thu thập và đánh số các bước Exception Flow
+            //    var exceptions = stepContainers.SelectMany(container => container.Descendants("Extension")
+            //        .GroupBy(step => step.Attribute("Name")?.Value ?? step.Value)
+            //        .Select(group => group.First())).ToList();
+
+            //    var exceptionCounter = new Dictionary<int, int>(); // Đếm số bước ngoại lệ cho mỗi branchPoint
+            //    foreach (var step in exceptions)
+            //    {
+            //        string description = step.Attribute("Name")?.Value
+            //            ?? step.Attribute("Text")?.Value
+            //            ?? step.Attribute("Description")?.Value
+            //            ?? step.Value.Trim()
+            //            ?? "No description";
+
+            //        if (string.IsNullOrEmpty(description) || description == "No description")
+            //        {
+            //            txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ (Extension): {description}\r\n");
+            //            continue;
+            //        }
+
+            //        string refStep = step.Attribute("RefStep")?.Value;
+            //        int? branchPoint = null;
+
+            //        // Tìm branchPoint dựa trên RefStep
+            //        if (!string.IsNullOrEmpty(refStep))
+            //        {
+            //            // Loại bỏ số thứ tự (nếu có) trong RefStep để so sánh với mô tả
+            //            string refStepCleaned = refStep;
+            //            if (refStep.Contains("."))
+            //            {
+            //                refStepCleaned = refStep.Substring(refStep.IndexOf('.') + 1).Trim();
+            //            }
+
+            //            // Tìm bước Basic Flow tương ứng
+            //            int index = basicFlowDescriptions.FindIndex(desc => desc.Trim().Equals(refStepCleaned, StringComparison.OrdinalIgnoreCase));
+            //            if (index >= 0)
+            //            {
+            //                branchPoint = index + 1; // Số thứ tự bước (1, 2, 3,...)
+            //            }
+            //            else
+            //            {
+            //                // Nếu không tìm thấy, thử tìm trong allSteps
+            //                var referencedStep = allSteps.FirstOrDefault(s =>
+            //                {
+            //                    string stepDesc = (s.Attribute("Name")?.Value ?? s.Value).Trim();
+            //                    if (stepDesc.Contains("."))
+            //                    {
+            //                        stepDesc = stepDesc.Substring(stepDesc.IndexOf('.') + 1).Trim();
+            //                    }
+            //                    return stepDesc.Equals(refStepCleaned, StringComparison.OrdinalIgnoreCase);
+            //                });
+
+            //                if (referencedStep != null)
+            //                {
+            //                    int stepIndex = allSteps.IndexOf(referencedStep);
+            //                    branchPoint = basicFlowDescriptions.Take(stepIndex + 1)
+            //                        .Count(desc => !desc.ToLower().Contains("atm") && !desc.ToLower().Contains("hệ thống") && !desc.ToLower().Contains("hiển thị"));
+            //                }
+            //            }
+            //        }
+            //        branchPoint = branchPoint ?? 1; // Mặc định gắn với bước 1 nếu không xác định được
+
+            //        if (!exceptionCounter.ContainsKey(branchPoint.Value))
+            //            exceptionCounter[branchPoint.Value] = 0;
+            //        exceptionCounter[branchPoint.Value]++;
+            //        char subStepLetter = (char)('a' + (exceptionCounter[branchPoint.Value] - 1)); // a, b, c,...
+            //        string stepNumber = $"{branchPoint}.{subStepLetter}";
+
+            //        // Đảm bảo không bỏ sót bước ngoại lệ
+            //        string uniqueDescription = $"{stepNumber}. {description}";
+            //        if (uniqueSteps.Add(uniqueDescription)) // Sử dụng uniqueDescription để tránh trùng lặp
+            //        {
+            //            string expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
+            //            if (description.Contains("Lỗi kết nối với ngân hàng") || description.Contains("Tài khoản không hợp lệ"))
+            //            {
+            //                expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
+            //            }
+            //            else if (description.Contains("Lỗi khác"))
+            //            {
+            //                expectedResult = "Hệ thống hiển thị thông báo lỗi khác và quay lại menu chính.";
+            //            }
+
+            //            var stepData = new StepData
+            //            {
+            //                UseCaseName = useCaseName,
+            //                Level = "Không xác định",
+            //                Preconditions = preconditions,
+            //                PostConditions = postConditions,
+            //                FlowType = "Exception Flow",
+            //                Description = uniqueDescription,
+            //                ExpectedResult = expectedResult,
+            //                BranchPoint = branchPoint
+            //            };
+            //            steps.Add(stepData);
+            //            txtThongbao.AppendText($"Đã thêm bước Exception Flow: {uniqueDescription}\r\n");
+            //        }
+            //    }
+
+            //    // Kết hợp Basic Flow và Exception Flow
+            //    steps.InsertRange(0, basicFlowSteps);
+
+            //    txtThongbao.AppendText($"Tổng số bước: {steps.Count}\r\n");
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi phân tích bước: {ex.Message}\r\n");
+            //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
+            //}
+            //return steps;
+
+
             var steps = new List<StepData>();
             var uniqueSteps = new HashSet<string>();
+            var basicFlowDescriptions = new List<(int Index, string Description)>(); // Lưu số thứ tự và mô tả của Basic Flow
 
             try
             {
@@ -1638,24 +912,24 @@ namespace DATN
 
                 var stepContainers = useCase.Descendants("StepContainer").ToList();
                 var vpumlModels = useCase.Descendants("vpumlModel")
-                    .Where(e => e.Attribute("type")?.Value == "step" || e.Attribute("type")?.Value == "alternative")
+                    .Where(e => e.Attribute("type")?.Value == "step")
                     .ToList();
 
                 txtThongbao.AppendText($"Số StepContainer: {stepContainers.Count()}, Số vpumlModel: {vpumlModels.Count()}\r\n");
-
-                int basicFlowStepIndex = 0;
 
                 var allSteps = new List<XElement>();
                 foreach (var container in stepContainers)
                 {
                     allSteps.AddRange(container.Descendants("Step").Where(step => step.Name.LocalName != "Extension"));
                 }
-                foreach (var model in vpumlModels.Where(m => m.Attribute("type")?.Value == "step"))
+                foreach (var model in vpumlModels)
                 {
                     allSteps.AddRange(model.Descendants("step"));
                 }
 
-                // Xử lý Basic Flow
+                // Thu thập tất cả các bước Basic Flow trước
+                int basicFlowStepIndex = 0;
+                var basicFlowSteps = new List<StepData>();
                 for (int i = 0; i < allSteps.Count; i++)
                 {
                     var step = allSteps[i];
@@ -1667,13 +941,10 @@ namespace DATN
 
                     if (string.IsNullOrEmpty(description) || description == "No description")
                     {
-                        txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ tại index {i}: {description}\r\n");
                         continue;
                     }
 
                     bool isSystemAction = description.ToLower().Contains("atm") || description.ToLower().Contains("hệ thống") || description.ToLower().Contains("hiển thị");
-
-                    txtThongbao.AppendText($"Kiểm tra bước tại index {i}: {description}, IsSystemAction: {isSystemAction}\r\n");
 
                     if (!isSystemAction)
                     {
@@ -1684,7 +955,6 @@ namespace DATN
                             string expectedResult = "Không có kết quả kỳ vọng";
                             List<string> expectedResults = new List<string>();
 
-                            // Tìm các bước SYSTEM liên tiếp ngay sau (chỉ trong Basic Flow)
                             int j = i + 1;
                             while (j < allSteps.Count)
                             {
@@ -1698,7 +968,6 @@ namespace DATN
                                 bool isNextSystemAction = nextDescription.ToLower().Contains("atm") || nextDescription.ToLower().Contains("hệ thống") || nextDescription.ToLower().Contains("hiển thị");
                                 if (isNextSystemAction)
                                 {
-                                    // Chỉ gộp nếu không phải là thông báo lỗi (thuộc Exception Flow)
                                     if (!nextDescription.ToLower().Contains("lỗi") && !nextDescription.ToLower().Contains("error"))
                                     {
                                         expectedResults.Add(nextDescription.Trim());
@@ -1706,23 +975,22 @@ namespace DATN
                                     }
                                     else
                                     {
-                                        break; // Dừng nếu gặp thông báo lỗi, tránh gộp nhầm
+                                        break;
                                     }
                                 }
                                 else
                                 {
-                                    break; // Thoát nếu gặp bước không phải SYSTEM
+                                    break;
                                 }
                             }
 
                             if (expectedResults.Count > 0)
                             {
                                 expectedResult = string.Join("\n", expectedResults);
-                                i = j - 1; // Cập nhật i để bỏ qua các bước SYSTEM đã xử lý
-                                txtThongbao.AppendText($"Gộp ExpectedResult cho bước {numberedDescription}: {expectedResult}\r\n");
+                                i = j - 1;
                             }
 
-                            steps.Add(new StepData
+                            var stepData = new StepData
                             {
                                 UseCaseName = useCaseName,
                                 Level = "Không xác định",
@@ -1732,96 +1000,132 @@ namespace DATN
                                 Description = numberedDescription,
                                 ExpectedResult = expectedResult,
                                 BranchPoint = null
-                            });
-                            txtThongbao.AppendText($"Đã thêm bước Basic Flow: {numberedDescription}, ExpectedResult: {expectedResult}\r\n");
+                            };
+                            basicFlowSteps.Add(stepData);
+                            basicFlowDescriptions.Add((basicFlowStepIndex, description)); // Lưu số thứ tự và mô tả
                         }
-                    }
-                    else
-                    {
-                        txtThongbao.AppendText($"Bỏ qua bước hệ thống tại index {i}: {description} (sẽ gộp vào ExpectedResult nếu thuộc Basic Flow)\r\n");
                     }
                 }
 
-                // Xử lý Extension và Alternative Flow (không gộp từ Basic Flow)
-                foreach (var container in stepContainers)
+                // Thu thập và đánh số các bước Exception Flow
+                var exceptions = stepContainers.SelectMany(container => container.Descendants("Extension")
+                    .GroupBy(step => step.Attribute("Name")?.Value ?? step.Value)
+                    .Select(group => group.First())).ToList();
+
+                var exceptionCounter = new Dictionary<int, int>(); // Đếm số bước ngoại lệ cho mỗi branchPoint
+                foreach (var step in exceptions)
                 {
-                    var extensions = container.Descendants("Extension")
-                        .GroupBy(step => step.Attribute("Name")?.Value)
-                        .Select(group => group.First());
+                    string description = step.Attribute("Name")?.Value
+                        ?? step.Attribute("Text")?.Value
+                        ?? step.Attribute("Description")?.Value
+                        ?? step.Value.Trim()
+                        ?? "No description";
 
-                    foreach (var step in extensions)
+                    if (string.IsNullOrEmpty(description) || description == "No description")
                     {
-                        string description = step.Attribute("Name")?.Value
-                            ?? step.Attribute("Text")?.Value
-                            ?? step.Attribute("Description")?.Value
-                            ?? step.Value.Trim()
-                            ?? "No description";
+                        txtThongbao.AppendText($"Bỏ qua bước không có mô tả hợp lệ (Extension): {description}\r\n");
+                        continue;
+                    }
 
-                        if (string.IsNullOrEmpty(description) || description == "No description")
+                    string refStep = step.Attribute("RefStep")?.Value;
+                    int? branchPoint = null;
+
+                    // Tìm branchPoint dựa trên RefStep
+                    if (!string.IsNullOrEmpty(refStep))
+                    {
+                        // Chuẩn hóa RefStep và mô tả để so sánh
+                        string refStepCleaned = refStep.Trim();
+
+                        // Tìm bước Basic Flow tương ứng
+                        var matchingStep = basicFlowDescriptions.FirstOrDefault(bfd =>
+                            bfd.Description.Trim().Equals(refStepCleaned, StringComparison.OrdinalIgnoreCase) ||
+                            $"{bfd.Index}. {bfd.Description}".Trim().Equals(refStepCleaned, StringComparison.OrdinalIgnoreCase));
+
+                        if (matchingStep != default)
                         {
-                            txtThongbao.AppendText("Bỏ qua bước không có mô tả hợp lệ (Extension).\r\n");
-                            continue;
-                        }
-
-                        string refStep = step.Attribute("RefStep")?.Value;
-                        int? branchPoint = null;
-                        if (!string.IsNullOrEmpty(refStep))
-                        {
-                            var referencedStep = allSteps.FirstOrDefault(s => (s.Attribute("Name")?.Value ?? s.Value) == refStep);
-                            if (referencedStep != null)
-                                branchPoint = allSteps.IndexOf(referencedStep) + 1;
-                        }
-                        branchPoint = branchPoint ?? 1; // Mặc định gắn với bước 1 nếu không xác định được
-
-                        string flowType = "Alternative Flow";
-                        string cleanedDescription = description.ToLower().Trim();
-                        if (cleanedDescription.Contains("không hợp lệ") || cleanedDescription.Contains("lỗi"))
-                            flowType = "Exception Flow";
-
-                        string stepNumber;
-                        if (flowType == "Exception Flow")
-                        {
-                            // Điều chỉnh số bước dựa trên branchPoint và mô tả
-                            if (description == "Lỗi kết nối với ngân hàng" && branchPoint == 1)
-                                stepNumber = "1.1.a";
-                            else if (description == "Tài khoản không hợp lệ" && branchPoint == 2)
-                                stepNumber = "2.a";
-                            else
-                                stepNumber = $"{branchPoint}.1.a"; // Mặc định cho các trường hợp khác
+                            branchPoint = matchingStep.Index; // Sử dụng số thứ tự của bước Basic Flow
+                            txtThongbao.AppendText($"Tìm thấy RefStep: '{refStep}' khớp với bước Basic Flow số {branchPoint}\r\n");
                         }
                         else
                         {
-                            stepNumber = $"{branchPoint}.a"; // Mặc định cho Alternative Flow
-                        }
-
-                        if (uniqueSteps.Add(description))
-                        {
-                            string expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
-                            // Gán ExpectedResult cụ thể cho từng bước Exception Flow
-                            if (description == "Lỗi kết nối với ngân hàng" || description == "Tài khoản không hợp lệ")
+                            // Nếu không tìm thấy, thử tìm trong allSteps
+                            var referencedStep = allSteps.FirstOrDefault(s =>
                             {
-                                expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
-                            }
-                            else if (description == "Lỗi khác")
-                            {
-                                expectedResult = "Hệ thống hiển thị thông báo lỗi khác và quay lại menu chính.";
-                            }
-
-                            steps.Add(new StepData
-                            {
-                                UseCaseName = useCaseName,
-                                Level = "Không xác định",
-                                Preconditions = preconditions,
-                                PostConditions = postConditions,
-                                FlowType = flowType,
-                                Description = $"{stepNumber}. {description}",
-                                ExpectedResult = expectedResult,
-                                BranchPoint = branchPoint
+                                string stepDesc = (s.Attribute("Name")?.Value ?? s.Value).Trim();
+                                return stepDesc.Equals(refStepCleaned, StringComparison.OrdinalIgnoreCase) ||
+                                       stepDesc.EndsWith(refStepCleaned, StringComparison.OrdinalIgnoreCase);
                             });
-                            txtThongbao.AppendText($"Đã thêm bước {flowType}: {description}, ExpectedResult: {expectedResult}\r\n");
+
+                            if (referencedStep != null)
+                            {
+                                int stepIndex = allSteps.IndexOf(referencedStep);
+                                branchPoint = basicFlowDescriptions.TakeWhile(bfd => allSteps.Take(stepIndex + 1)
+                                    .Any(s => (s.Attribute("Name")?.Value ?? s.Value).Trim().Contains(bfd.Description)))
+                                    .Count(bfd => !bfd.Description.ToLower().Contains("atm") && !bfd.Description.ToLower().Contains("hệ thống") && !bfd.Description.ToLower().Contains("hiển thị"));
+                                if (branchPoint == 0) branchPoint = 1; // Đảm bảo branchPoint không bị 0
+                                txtThongbao.AppendText($"Tìm thấy RefStep: '{refStep}' trong allSteps, branchPoint = {branchPoint}\r\n");
+                            }
+                            else
+                            {
+                                txtThongbao.AppendText($"Không tìm thấy RefStep: '{refStep}' trong Basic Flow, mặc định branchPoint = 1\r\n");
+                            }
                         }
                     }
+
+                    // Nếu không tìm thấy RefStep, thử tìm theo từ khóa trong mô tả
+                    if (branchPoint == null)
+                    {
+                        foreach (var (index, desc) in basicFlowDescriptions)
+                        {
+                            if (description.ToLower().Contains(desc.ToLower()))
+                            {
+                                branchPoint = index;
+                                txtThongbao.AppendText($"Tìm thấy từ khóa trong mô tả: '{description}' khớp với bước Basic Flow số {branchPoint}\r\n");
+                                break;
+                            }
+                        }
+                    }
+
+                    branchPoint = branchPoint ?? 1; // Mặc định gắn với bước 1 nếu không xác định được
+
+                    if (!exceptionCounter.ContainsKey(branchPoint.Value))
+                        exceptionCounter[branchPoint.Value] = 0;
+                    exceptionCounter[branchPoint.Value]++;
+                    char subStepLetter = (char)('a' + (exceptionCounter[branchPoint.Value] - 1)); // a, b, c,...
+                    string stepNumber = $"{branchPoint}.{subStepLetter}";
+
+                    // Đảm bảo không bỏ sót bước ngoại lệ
+                    string uniqueDescription = $"{stepNumber}. {description}";
+                    if (uniqueSteps.Add(uniqueDescription)) // Sử dụng uniqueDescription để tránh trùng lặp
+                    {
+                        string expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
+                        if (description.Contains("Lỗi kết nối với ngân hàng") || description.Contains("Tài khoản không hợp lệ"))
+                        {
+                            expectedResult = "ATM hiển thị thông báo lỗi và quay lại menu chính";
+                        }
+                        else if (description.Contains("Lỗi khác"))
+                        {
+                            expectedResult = "Hệ thống hiển thị thông báo lỗi khác và quay lại menu chính.";
+                        }
+
+                        var stepData = new StepData
+                        {
+                            UseCaseName = useCaseName,
+                            Level = "Không xác định",
+                            Preconditions = preconditions,
+                            PostConditions = postConditions,
+                            FlowType = "Exception Flow",
+                            Description = uniqueDescription,
+                            ExpectedResult = expectedResult,
+                            BranchPoint = branchPoint
+                        };
+                        steps.Add(stepData);
+                        txtThongbao.AppendText($"Đã thêm bước Exception Flow: {uniqueDescription}\r\n");
+                    }
                 }
+
+                // Kết hợp Basic Flow và Exception Flow
+                steps.InsertRange(0, basicFlowSteps);
 
                 txtThongbao.AppendText($"Tổng số bước: {steps.Count}\r\n");
             }
@@ -1839,134 +1143,7 @@ namespace DATN
 
         private IEnumerable<StepData> ParseXmiSteps(XElement useCase)
         {
-            //chạy
-            //var steps = new List<StepData>();
-
-            //try
-            //{
-            //    string useCaseName = useCase.Attribute("name")?.Value ?? "Không xác định";
-            //    string preconditions = "Không xác định";
-            //    string postConditions = "Không xác định";
-
-            //    txtThongbao.AppendText($"Bắt đầu phân tích UseCase (XMI): {useCaseName}\r\n");
-
-            //    var activityNodes = useCase.Descendants("{http://www.eclipse.org/uml2/2.0.0/UML}ownedBehavior")
-            //        .Concat(useCase.Descendants("{http://www.eclipse.org/uml2/2.0.0/UML}activity"))
-            //        .Concat(useCase.Descendants("{http://www.eclipse.org/uml2/2.0.0/UML}specification"));
-
-            //    txtThongbao.AppendText($"Số activity nodes tìm thấy: {activityNodes.Count()}\r\n");
-
-            //    int basicFlowStepIndex = 0;
-            //    var basicFlowSteps = new List<XElement>();
-
-            //    // Thu thập các bước Basic Flow
-            //    foreach (var node in activityNodes)
-            //    {
-            //        var stepElements = node.Descendants("{http://www.eclipse.org/uml2/2.0.0/UML}node")
-            //            .Concat(node.Descendants("{http://www.eclipse.org/uml2/2.0.0/UML}action"))
-            //            .Where(step => !(step.Attribute("type")?.Value?.ToLower().Contains("alternative") ?? false));
-
-            //        foreach (var step in stepElements)
-            //        {
-            //            string description = step.Attribute("name")?.Value
-            //                ?? step.Element("{http://www.eclipse.org/uml2/2.0.0/UML}specification")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                continue;
-            //            }
-
-            //            basicFlowStepIndex++;
-            //            basicFlowSteps.Add(step);
-
-            //            steps.Add(new StepData
-            //            {
-            //                UseCaseName = useCaseName,
-            //                Level = "Không xác định",
-            //                Preconditions = preconditions,
-            //                PostConditions = postConditions,
-            //                FlowType = "Basic Flow",
-            //                Description = description,
-            //                ExpectedResult = GenerateExpectedResult(description),
-            //                BranchPoint = null
-            //            });
-
-            //            txtThongbao.AppendText($"Đã thêm bước (XMI): {description}\r\n");
-            //        }
-            //    }
-
-            //    // Xử lý các bước nhánh
-            //    foreach (var node in activityNodes)
-            //    {
-            //        var altSteps = node.Descendants("{http://www.eclipse.org/uml2/2.0.0/UML}node")
-            //            .Concat(node.Descendants("{http://www.eclipse.org/uml2/2.0.0/UML}action"))
-            //            .Where(step => step.Attribute("type")?.Value?.ToLower().Contains("alternative") ?? false);
-
-            //        foreach (var step in altSteps)
-            //        {
-            //            string description = step.Attribute("name")?.Value
-            //                ?? step.Element("{http://www.eclipse.org/uml2/2.0.0/UML}specification")?.Value
-            //                ?? step.Value.Trim()
-            //                ?? "No description";
-
-            //            if (string.IsNullOrEmpty(description) || description == "No description")
-            //            {
-            //                txtThongbao.AppendText($"Bước không có mô tả hợp lệ, bỏ qua.\r\n");
-            //                continue;
-            //            }
-
-            //            string refStep = step.Attribute("refStep")?.Value;
-            //            int? branchPoint = null;
-
-            //            if (!string.IsNullOrEmpty(refStep))
-            //            {
-            //                var referencedStep = basicFlowSteps.FirstOrDefault(s => (s.Attribute("name")?.Value ?? s.Value) == refStep);
-            //                if (referencedStep != null)
-            //                {
-            //                    branchPoint = basicFlowSteps.IndexOf(referencedStep) + 1;
-            //                }
-            //            }
-
-            //            if (branchPoint == null)
-            //            {
-            //                branchPoint = basicFlowStepIndex; // Mặc định nhánh ở bước cuối
-            //            }
-
-            //            string flowType = "Alternative Flow";
-            //            if (description.ToLower().Contains("lỗi") || description.ToLower().Contains("mất kết nối"))
-            //            {
-            //                flowType = "Exception Flow";
-            //            }
-
-            //            steps.Add(new StepData
-            //            {
-            //                UseCaseName = useCaseName,
-            //                Level = "Không xác định",
-            //                Preconditions = preconditions,
-            //                PostConditions = postConditions,
-            //                FlowType = flowType,
-            //                Description = description,
-            //                ExpectedResult = GenerateExpectedResult(description),
-            //                BranchPoint = branchPoint
-            //            });
-
-            //            txtThongbao.AppendText($"Đã thêm bước (XMI): {description} (FlowType: {flowType}, BranchPoint: {branchPoint})\r\n");
-            //        }
-            //    }
-
-            //    txtThongbao.AppendText($"Tổng số bước (XMI): {steps.Count}\r\n");
-            //}
-            //catch (Exception ex)
-            //{
-            //    txtThongbao.AppendText($"Lỗi khi phân tích bước (XMI): {ex.Message}\r\n");
-            //}
-            //return steps;
-
-
-
-
+            
             var steps = new List<StepData>();
 
             try
@@ -2126,118 +1303,6 @@ namespace DATN
         private string GenerateExpectedResult(string stepDescription, XElement testingProcedure = null)
         {
             
-            //ổn bthg
-            // Ưu tiên lấy kết quả kỳ vọng từ XML nếu có
-            //string expectedResult = testingProcedure?.Element("ExpectedResults")?.Value;
-            //if (!string.IsNullOrEmpty(expectedResult)) return expectedResult;
-
-            //// Kiểm tra nếu stepDescription rỗng
-            //if (string.IsNullOrEmpty(stepDescription))
-            //    return "Không có kết quả kỳ vọng";
-
-            //// Chuyển mô tả thành chữ thường để so sánh
-            //string lowerDescription = stepDescription.ToLowerInvariant();
-
-            //// Thêm log để debug
-            //txtThongbao.AppendText($"Đang xử lý mô tả: '{stepDescription}' -> ");
-
-            //// Xử lý các trường hợp kiểm tra (validation)
-            //if (lowerDescription.Contains("kiểm tra"))
-            //{
-            //    if (lowerDescription.Contains("địa chỉ"))
-            //    {
-            //        if (lowerDescription.Contains("không hợp lệ"))
-            //            return "Hệ thống phát hiện địa chỉ không hợp lệ, hiển thị thông báo lỗi và yêu cầu nhập lại địa chỉ hợp lệ.";
-            //        return "Hệ thống kiểm tra địa chỉ thành công, xác nhận địa chỉ hợp lệ và tiếp tục xử lý.";
-            //    }
-            //    else if (lowerDescription.Contains("thẻ tín dụng") || lowerDescription.Contains("ghi nợ"))
-            //    {
-            //        if (lowerDescription.Contains("không hợp lệ"))
-            //            return "Hệ thống xác thực thẻ tín dụng/ghi nợ thất bại, hiển thị thông báo lỗi và yêu cầu nhập lại thông tin hợp lệ.";
-            //        return "Hệ thống kiểm tra thẻ tín dụng/ghi nợ thành công, xác nhận thông tin hợp lệ và tiếp tục xử lý.";
-            //    }
-            //    else if (lowerDescription.Contains("dữ liệu"))
-            //    {
-            //        if (lowerDescription.Contains("không đầy đủ"))
-            //            return "Hệ thống phát hiện dữ liệu cơ bản không đầy đủ, hiển thị thông báo lỗi và yêu cầu nhập thêm thông tin.";
-            //        return "Hệ thống kiểm tra dữ liệu thành công, xác nhận dữ liệu đầy đủ và hợp lệ.";
-            //    }
-            //    else if (lowerDescription.Contains("tài khoản"))
-            //    {
-            //        if (lowerDescription.Contains("đã tồn tại"))
-            //            return "Hệ thống phát hiện tài khoản đã tồn tại, hiển thị thông báo lỗi và yêu cầu sử dụng tài khoản khác.";
-            //        return "Hệ thống kiểm tra tài khoản thành công, xác nhận tài khoản hợp lệ và chưa tồn tại.";
-            //    }
-            //    else
-            //    {
-            //        return "Hệ thống kiểm tra thành công và tiếp tục xử lý.";
-            //    }
-            //}
-            //else if (lowerDescription.Contains("không hợp lệ"))
-            //{
-            //    if (lowerDescription.Contains("địa chỉ"))
-            //        return "Hệ thống phát hiện địa chỉ không hợp lệ, hiển thị thông báo lỗi và yêu cầu nhập lại địa chỉ hợp lệ.";
-            //    else if (lowerDescription.Contains("thẻ tín dụng") || lowerDescription.Contains("ghi nợ"))
-            //        return "Hệ thống xác thực thẻ tín dụng/ghi nợ thất bại, hiển thị thông báo lỗi và yêu cầu nhập lại thông tin hợp lệ.";
-            //    else
-            //        return "Hệ thống phát hiện dữ liệu không hợp lệ, hiển thị thông báo lỗi và yêu cầu nhập lại.";
-            //}
-            //else if (lowerDescription.Contains("không đầy đủ"))
-            //{
-            //    return "Hệ thống phát hiện dữ liệu cơ bản không đầy đủ, hiển thị thông báo lỗi và yêu cầu nhập thêm thông tin.";
-            //}
-            //else if (lowerDescription.Contains("chọn chức năng"))
-            //{
-            //    return "Hệ thống hiển thị giao diện tạo/cập nhật tài khoản và cho phép nhập thông tin cơ bản.";
-            //}
-            //else if (lowerDescription.Contains("tạo bản ghi"))
-            //{
-            //    return "Hệ thống tạo bản ghi thành công và lưu vào cơ sở dữ liệu.";
-            //}
-            //else if (lowerDescription.Contains("yêu cầu nhập"))
-            //{
-            //    return "Hệ thống hiển thị yêu cầu nhập thông tin và chờ phản hồi từ khách hàng.";
-            //}
-            //else if (lowerDescription.Contains("liên kết"))
-            //{
-            //    return "Hệ thống liên kết thông tin khách hàng, địa chỉ và tài khoản thành công và lưu lại.";
-            //}
-            //else if (lowerDescription.Contains("trả về"))
-            //{
-            //    if (lowerDescription.Contains("thông tin tài khoản"))
-            //        return "Hệ thống trả về thông tin tài khoản hợp lệ cho khách hàng và hiển thị xác nhận.";
-            //    return "Hệ thống trả về thông tin thành công và chờ phản hồi từ người dùng.";
-            //}
-            //else if (lowerDescription.Contains("hiển thị"))
-            //{
-            //    if (lowerDescription.Contains("thông tin tài khoản"))
-            //        return "Hệ thống hiển thị thông tin tài khoản hợp lệ cho khách hàng và chờ xác nhận.";
-            //    return "Hệ thống hiển thị thông tin thành công và chờ phản hồi từ người dùng.";
-            //}
-            //else if (lowerDescription.Contains("xác nhận"))
-            //{
-            //    return "Hệ thống xác nhận thành công và tiếp tục quy trình.";
-            //}
-            //else if (lowerDescription.Contains("lỗi") || lowerDescription.Contains("thất bại"))
-            //{
-            //    return "Hệ thống hiển thị thông báo lỗi và yêu cầu thực hiện lại thao tác.";
-            //}
-            //else if (lowerDescription.Contains("thành công"))
-            //{
-            //    return "Hệ thống xử lý thành công và chuyển sang bước tiếp theo.";
-            //}
-            //else if (lowerDescription.Contains("nhập thông tin"))
-            //{
-            //    return "Hệ thống yêu cầu nhập thông tin và kiểm tra tính hợp lệ trước khi tiếp tục.";
-            //}
-
-            //// Thêm log khi rơi vào trường hợp mặc định
-            //txtThongbao.AppendText($"Không khớp với điều kiện nào, trả về mặc định.\r\n");
-            //return null;
-
-
-
-
             // Ưu tiên lấy kết quả kỳ vọng từ XML nếu có
             string expectedResult = testingProcedure?.Element("ExpectedResults")?.Value;
             if (!string.IsNullOrEmpty(expectedResult)) return expectedResult;
@@ -2983,122 +2048,6 @@ namespace DATN
         private void btnInput_Click(object sender, EventArgs e)
         {
 
-            //chạy
-            //using (var openFileDialog = new OpenFileDialog())
-            //{
-            //    openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            //    openFileDialog.Title = "Chọn file đặc tả";
-            //    openFileDialog.RestoreDirectory = true;
-
-            //    if (radioTextIn.Checked)
-            //    {
-            //        openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-            //    }
-            //    else if (radioXMLIn.Checked)
-            //    {
-            //        openFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
-            //    }
-            //    else if (radioXMIIn.Checked)
-            //    {
-            //        openFileDialog.Filter = "XMI files (*.xmi;*.uml)|*.xmi;*.uml|All files (*.*)|*.*";
-            //    }
-            //    else
-            //    {
-            //        openFileDialog.Filter = "Supported files (*.txt;*.xml;*.xmi;*.uml)|*.txt;*.xml;*.xmi;*.uml|All files (*.*)|*.*";
-            //    }
-
-            //    if (openFileDialog.ShowDialog() == DialogResult.OK)
-            //    {
-            //        string filePath = openFileDialog.FileName;
-            //        if (radioTextIn.Checked)
-            //        {
-            //            if (!ValidateTxtFile(filePath))
-            //            {
-            //                _selectedFilePath = null;
-            //                txtInputTM.Clear();
-            //                return;
-            //            }
-            //            _selectedFilePath = filePath;
-            //            txtInputTM.Text = filePath; // Sửa thành filePath đầy đủ
-            //        }
-            //        else if (radioXMLIn.Checked)
-            //        {
-            //            if (!ValidateXmlFile(filePath))
-            //            {
-            //                return;
-            //            }
-            //            _selectedFilePath = filePath;
-            //            txtInputTM.Text = filePath; // Sửa thành filePath đầy đủ
-            //            LoadXmlAndUseCases(filePath);
-            //        }
-            //        else if (radioXMIIn.Checked)
-            //        {
-            //            if (!ValidateXmiFile(filePath))
-            //            {
-            //                return;
-            //            }
-            //            _selectedFilePath = filePath;
-            //            txtInputTM.Text = filePath; // Sửa thành filePath đầy đủ
-            //            LoadXmlAndUseCases(filePath);
-            //        }
-            //    }
-            //}
-
-
-
-            //ổn 
-            //using (var openFileDialog = new OpenFileDialog())
-            //{
-            //    openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            //    if (radioTextIn.Checked)
-            //    {
-            //        openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-            //    }
-            //    else if (radioXMLIn.Checked)
-            //    {
-            //        openFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
-            //    }
-            //    else if (radioXMIIn.Checked)
-            //    {
-            //        openFileDialog.Filter = "XMI files (*.xmi)|*.xmi|All files (*.*)|*.*";
-            //    }
-            //    else
-            //    {
-            //        openFileDialog.Filter = "Supported files (*.txt,*.xml,*.xmi,*.uml,*.txtx,*.xmlx,*.xmix)|*.txt;*.xml;*.xmi;*.uml;*.txtx;*.xmlx;*.xmix|All files (*.*)|*.*";
-            //    }
-
-            //    if (openFileDialog.ShowDialog() == DialogResult.OK)
-            //    {
-            //        string filePath = openFileDialog.FileName;
-
-            //        // Khai báo isStarUml một lần ở đây
-            //        bool isStarUml;
-            //        bool isValid = ValidateXmlFile(filePath, out isStarUml);
-
-            //        if (isValid)
-            //        {
-            //            txtInputTM.Text = filePath;
-            //            LoadXmlAndUseCases(filePath);
-            //            return;
-            //        }
-            //        else if (radioHTMLOut.Checked || radioWordOut.Checked || radioExcelOut.Checked)
-            //        {
-            //            isValid = ValidateXmlFile(filePath, out isStarUml); // Sử dụng lại biến isStarUml
-            //            if (isValid)
-            //            {
-            //                txtInputTM.Text = filePath;
-            //                return;
-            //            }
-            //        }
-            //        else
-            //        {
-            //            txtInputTM.Text = filePath;
-            //            return;
-            //        }
-            //    }
-            //}
-
-
             using (var openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -3179,143 +2128,6 @@ namespace DATN
 
         private void LoadDataGridView(UseCaseData useCase)
         {
-
-            //ổn nhất hiện tại
-            //try
-            //{
-            //    if (!_isDisplayingTestCases)
-            //    {
-            //        SetUseCaseDetailsColumns();
-            //        dgvUseCaseDetails.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-            //    }
-
-            //    int expectedColumnCount = 7;
-            //    if (dgvUseCaseDetails.Columns.Count != expectedColumnCount)
-            //    {
-            //        txtThongbao.AppendText($"Lỗi: Số cột trong DataGridView ({dgvUseCaseDetails.Columns.Count}) không khớp với số cột mong đợi ({expectedColumnCount}).\r\n");
-            //        SetUseCaseDetailsColumns();
-            //    }
-
-            //    dgvUseCaseDetails.Rows.Clear();
-
-            //    if (useCase == null || useCase.Steps == null || !useCase.Steps.Any())
-            //    {
-            //        txtThongbao.AppendText("Không có bước nào để hiển thị cho UseCase này.\r\n");
-            //        return;
-            //    }
-
-            //    txtThongbao.AppendText($"UseCase: {useCase.Name}\r\n");
-            //    txtThongbao.AppendText($"UseCase Preconditions: {useCase.Preconditions}\r\n");
-            //    txtThongbao.AppendText($"UseCase Postconditions: {useCase.Postconditions}\r\n");
-
-            //    int stepCounter = 0; // Đếm số hàng trong DataGridView
-            //    Dictionary<int, List<string>> stepExpectedResults = new Dictionary<int, List<string>>();
-            //    Dictionary<int, string> stepProcedures = new Dictionary<int, string>();
-            //    Dictionary<int, string> stepPreconditions = new Dictionary<int, string>();
-            //    Dictionary<int, string> stepPostconditions = new Dictionary<int, string>();
-            //    Dictionary<int, string> stepFlowTypes = new Dictionary<int, string>();
-            //    Dictionary<int, string> stepLevels = new Dictionary<int, string>();
-            //    string lastUseCaseName = null;
-
-            //    for (int i = 0; i < useCase.Steps.Count; i++)
-            //    {
-            //        var step = useCase.Steps[i];
-            //        txtThongbao.AppendText($"Step Debug - Index: {i}, Description: {step.Description}, ExpectedResult: {step.ExpectedResult}\r\n");
-
-            //        string displayPreconditions = step.Preconditions ?? "Không có";
-            //        string displayPostconditions = step.PostConditions ?? "Không có";
-
-            //        if (displayPreconditions == "Không có" && useCase.Preconditions != "Không có")
-            //        {
-            //            displayPreconditions = useCase.Preconditions;
-            //        }
-            //        if (displayPostconditions == "Không có" && useCase.Postconditions != "Không có")
-            //        {
-            //            displayPostconditions = useCase.Postconditions;
-            //        }
-
-            //        bool isSystemStep = step.Description?.ToLower().Contains("system") == true || step.Description?.ToLower().Contains("hệ thống") == true;
-
-            //        if (!isSystemStep)
-            //        {
-            //            // Tăng stepCounter chỉ khi gặp bước người dùng (Basic Flow hoặc Exception Flow)
-            //            stepCounter++;
-            //            stepProcedures[stepCounter] = step.Description; // Sử dụng Description đã có số thứ tự từ ParseSteps
-            //            stepPreconditions[stepCounter] = displayPreconditions;
-            //            stepPostconditions[stepCounter] = displayPostconditions;
-            //            stepFlowTypes[stepCounter] = step.FlowType ?? "Không xác định";
-            //            stepLevels[stepCounter] = step.Level ?? "Không xác định";
-            //            stepExpectedResults[stepCounter] = new List<string>();
-
-            //            if (!string.IsNullOrEmpty(step.ExpectedResult))
-            //            {
-            //                string expectedResult = step.ExpectedResult.Trim();
-            //                if (expectedResult != "Hệ thống xử lý hành động thành công và thực hiện các bước tiếp theo")
-            //                {
-            //                    stepExpectedResults[stepCounter].Add(expectedResult);
-            //                }
-            //            }
-
-            //            // Kiểm tra các bước SYSTEM tiếp theo để gộp vào ExpectedResult
-            //            for (int j = i + 1; j < useCase.Steps.Count; j++)
-            //            {
-            //                var nextStep = useCase.Steps[j];
-            //                bool isNextSystemStep = nextStep.Description?.ToLower().Contains("system") == true || nextStep.Description?.ToLower().Contains("hệ thống") == true;
-
-            //                if (!isNextSystemStep)
-            //                {
-            //                    break;
-            //                }
-
-            //                string nextStepDescription = nextStep.Description?.Trim();
-            //                if (!string.IsNullOrEmpty(nextStepDescription))
-            //                {
-            //                    // Tách số thứ tự (nếu có) và chỉ lấy phần mô tả
-            //                    string cleanedDescription = nextStepDescription;
-            //                    var match = System.Text.RegularExpressions.Regex.Match(nextStepDescription, @"^(\d+\.\d+\.\w|\d+\.\w|\d+\.)\s*(.*)");
-            //                    if (match.Success)
-            //                    {
-            //                        cleanedDescription = match.Groups[2].Value;
-            //                    }
-
-            //                    if (cleanedDescription != "Hệ thống xử lý hành động thành công và thực hiện các bước tiếp theo")
-            //                    {
-            //                        stepExpectedResults[stepCounter].Add(cleanedDescription);
-            //                    }
-            //                }
-            //                i = j; // Bỏ qua các bước SYSTEM đã xử lý
-            //            }
-
-            //            lastUseCaseName = step.UseCaseName ?? "Không xác định";
-            //        }
-            //    }
-
-            //    // Thêm các bước vào DataGridView
-            //    foreach (var stepNum in stepProcedures.Keys)
-            //    {
-            //        var uniqueExpectedResults = stepExpectedResults[stepNum].Distinct().ToList();
-            //        string combinedExpectedResults = string.Join("\n", uniqueExpectedResults);
-
-            //        dgvUseCaseDetails.Rows.Add(
-            //            lastUseCaseName,
-            //            stepLevels[stepNum],
-            //            stepPreconditions[stepNum],
-            //            stepPostconditions[stepNum],
-            //            stepFlowTypes[stepNum],
-            //            stepProcedures[stepNum],
-            //            combinedExpectedResults
-            //        );
-            //    }
-
-            //    txtThongbao.AppendText($"Đã hiển thị {stepProcedures.Count} bước cho UseCase: {useCase.Name}\r\n");
-            //}
-            //catch (Exception ex)
-            //{
-            //    txtThongbao.AppendText($"Lỗi khi hiển thị dữ liệu trong DataGridView: {ex.Message}\r\n");
-            //}
-
-
-
 
             try
             {
@@ -3446,24 +2258,7 @@ namespace DATN
         //đảm bảo người dùng chọn 1 cá sử dụng trong combobox
         private void ComboBoxUseCases_SelectedIndexChanged(object sender, EventArgs e)
         {
-            //chạy
-            //if (comboboxUC.SelectedIndex == -1) return;
-
-            //string selectedUseCaseName = comboboxUC.SelectedItem.ToString();
-            //var selectedUseCase = _useCases.FirstOrDefault(uc => uc.Name == selectedUseCaseName);
-            //if (selectedUseCase == null)
-            //{
-            //    txtThongbao.AppendText($"Không tìm thấy UseCase với tên: {selectedUseCaseName}\r\n");
-            //    _selectedUseCaseId = null;
-            //    return;
-            //}
-
-            //_selectedUseCaseId = selectedUseCase.Id;
-            //txtThongbao.AppendText($"Đã chọn UseCase: {selectedUseCaseName} (ID: {_selectedUseCaseId})\r\n");
-            //LoadDataGridView(selectedUseCase);
-
-
-
+            
             if (comboboxUC.SelectedIndex == -1) return;
 
             string selectedUseCaseName = comboboxUC.SelectedItem.ToString();
@@ -3486,6 +2281,283 @@ namespace DATN
         // Hàm sinh test case từ file XML và lưu vào danh sách _testCases
         private void GenerateTestCases()
         {
+            //chạy
+            //try
+            //{
+            //    _testCases.Clear();
+            //    txtThongbao.Clear();
+
+            //    if (string.IsNullOrEmpty(_selectedUseCaseId))
+            //    {
+            //        txtThongbao.AppendText("Chưa chọn Use Case! Vui lòng chọn một Use Case từ danh sách.\r\n");
+            //        return;
+            //    }
+
+            //    var useCase = _useCases?.FirstOrDefault(uc => uc.Id == _selectedUseCaseId);
+            //    if (useCase == null)
+            //    {
+            //        txtThongbao.AppendText($"Không tìm thấy Use Case với ID: {_selectedUseCaseId}\r\n");
+            //        return;
+            //    }
+
+            //    if (useCase.Steps == null)
+            //    {
+            //        useCase.Steps = new List<StepData>();
+            //        txtThongbao.AppendText("Cảnh báo: Use Case không có bước nào.\r\n");
+            //    }
+
+            //    if (HasCycle(useCase.Steps))
+            //    {
+            //        txtThongbao.AppendText("Lỗi: Phát hiện vòng lặp logic trong các bước. Không thể sinh test case.\r\n");
+            //        return;
+            //    }
+
+            //    var basicSteps = useCase.Steps.Where(s => s.FlowType == "Basic Flow").ToList();
+            //    var altExceptionSteps = useCase.Steps.Where(s => s.FlowType != "Basic Flow").ToList();
+
+            //    List<string> basicFlowSteps = new List<string>();
+            //    List<string> basicFlowExpectedResults = new List<string>();
+            //    foreach (var step in basicSteps)
+            //    {
+            //        basicFlowSteps.Add(step.Description ?? "N/A");
+            //        basicFlowExpectedResults.Add(step.ExpectedResult ?? "N/A");
+            //    }
+
+            //    int testCaseCounter = 1;
+
+            //    if (basicFlowSteps.Any())
+            //    {
+            //        var basicTestCase = new TestCase
+            //        {
+            //            UseCase = useCase.Id ?? "Unknown",
+            //            UseCaseName = useCase.Name ?? "Unknown",
+            //            TestName = $"TC-{testCaseCounter:D2}",
+            //            Procedure = new List<string>(basicFlowSteps),
+            //            ExpectedResults = new List<string>(basicFlowExpectedResults),
+            //            FlowType = "Basic Flow"
+            //        };
+
+            //        if (basicTestCase.Procedure.Count != basicTestCase.ExpectedResults.Count)
+            //        {
+            //            txtThongbao.AppendText($"Cảnh báo: Test case {basicTestCase.TestName} có số bước ({basicTestCase.Procedure.Count}) không khớp với số kết quả kỳ vọng ({basicTestCase.ExpectedResults.Count}).\r\n");
+            //        }
+
+            //        _testCases.Add(basicTestCase);
+            //        testCaseCounter++;
+            //        txtThongbao.AppendText($"Đã sinh test case {basicTestCase.TestName} với {basicTestCase.Procedure.Count} bước (Basic Flow).\r\n");
+            //    }
+
+            //    foreach (var step in altExceptionSteps)
+            //    {
+            //        IsStepReachable(step, basicSteps);
+
+            //        int branchPoint = step.BranchPoint ?? basicFlowSteps.Count;
+            //        if (branchPoint < 1 || branchPoint > basicFlowSteps.Count)
+            //        {
+            //            txtThongbao.AppendText($"Cảnh báo: BranchPoint không hợp lệ cho bước '{step.Description ?? "N/A"}', đặt mặc định thành bước cuối ({basicFlowSteps.Count}).\r\n");
+            //            branchPoint = basicFlowSteps.Count;
+            //        }
+
+            //        // Chỉ lấy các bước từ đầu đến BranchPoint
+            //        List<string> testSteps = basicFlowSteps.Take(branchPoint - 1).ToList();
+            //        List<string> testExpectedResults = basicFlowExpectedResults.Take(branchPoint - 1).ToList();
+
+            //        // Thêm bước nhánh
+            //        testSteps.Add(step.Description ?? "N/A");
+            //        testExpectedResults.Add(step.ExpectedResult ?? "N/A");
+
+            //        var testCase = new TestCase
+            //        {
+            //            UseCase = useCase.Id ?? "Unknown",
+            //            UseCaseName = useCase.Name ?? "Unknown",
+            //            TestName = $"TC-{testCaseCounter:D2}",
+            //            Procedure = new List<string>(testSteps),
+            //            ExpectedResults = new List<string>(testExpectedResults),
+            //            FlowType = step.FlowType ?? "Unknown"
+            //        };
+
+            //        if (testCase.Procedure.Count != testCase.ExpectedResults.Count)
+            //        {
+            //            txtThongbao.AppendText($"Cảnh báo: Test case {testCase.TestName} có số bước ({testCase.Procedure.Count}) không khớp với số kết quả kỳ vọng ({testCase.ExpectedResults.Count}).\r\n");
+            //        }
+
+            //        _testCases.Add(testCase);
+            //        testCaseCounter++;
+            //        txtThongbao.AppendText($"Đã sinh test case {testCase.TestName} với {testCase.Procedure.Count} bước ({step.FlowType ?? "Unknown"}).\r\n");
+            //    }
+
+            //    if (_testCases.Any())
+            //    {
+            //        SetTestCaseColumns();
+            //        dgvUseCaseDetails.Rows.Clear();
+            //        foreach (var testCase in _testCases)
+            //        {
+            //            string procedureText = string.Join("\n", testCase.Procedure);
+            //            string expectedResultText = string.Join("\n", testCase.ExpectedResults);
+
+            //            dgvUseCaseDetails.Rows.Add(
+            //                testCase.TestName,
+            //                testCase.UseCaseName,
+            //                testCase.FlowType,
+            //                procedureText,
+            //                expectedResultText,
+            //                testCase.FlowType == "Basic Flow" ? "Happy" : "Bad"
+            //            );
+            //        }
+            //        txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case!\r\n");
+            //    }
+            //    else
+            //    {
+            //        txtThongbao.AppendText("Không sinh được test case nào!\r\n");
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi sinh test case: {ex.Message}\r\n");
+            //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
+            //} 
+
+
+
+            //try
+            //{
+            //    _testCases.Clear();
+            //    txtThongbao.Clear();
+
+            //    if (string.IsNullOrEmpty(_selectedUseCaseId))
+            //    {
+            //        txtThongbao.AppendText("Chưa chọn Use Case! Vui lòng chọn một Use Case từ danh sách.\r\n");
+            //        return;
+            //    }
+
+            //    var useCase = _useCases?.FirstOrDefault(uc => uc.Id == _selectedUseCaseId);
+            //    if (useCase == null)
+            //    {
+            //        txtThongbao.AppendText($"Không tìm thấy Use Case với ID: {_selectedUseCaseId}\r\n");
+            //        return;
+            //    }
+
+            //    if (useCase.Steps == null || !useCase.Steps.Any())
+            //    {
+            //        useCase.Steps = new List<StepData>();
+            //        txtThongbao.AppendText("Cảnh báo: Use Case không có bước nào.\r\n");
+            //        return;
+            //    }
+
+            //    if (HasCycle(useCase.Steps))
+            //    {
+            //        txtThongbao.AppendText("Lỗi: Phát hiện vòng lặp logic trong các bước. Không thể sinh test case.\r\n");
+            //        return;
+            //    }
+
+            //    int testCaseCounter = 1;
+
+            //    // Lấy tất cả các bước đã được cập nhật từ useCase.Steps
+            //    var allSteps = useCase.Steps.OrderBy(s =>
+            //    {
+            //        // Phân tích số bước từ Description để sắp xếp (ví dụ: 1. -> 2. -> 1.a -> 2.a)
+            //        var match = Regex.Match(s.Description ?? "", @"(\d+)\.?([a-z]?)");
+            //        if (match.Success && int.TryParse(match.Groups[1].Value, out int stepNum))
+            //        {
+            //            int subStep = match.Groups[2].Value.Length > 0 ? (int)match.Groups[2].Value[0] - (int)'a' + 1 : 0;
+            //            return stepNum * 100 + subStep; // Đảm bảo Basic Flow trước, rồi đến Exception Flow
+            //        }
+            //        return int.MaxValue; // Đặt các bước không khớp ở cuối
+            //    }).ToList();
+
+            //    // Tách Basic Flow và Exception/Alternative Flow dựa trên FlowType
+            //    var basicSteps = allSteps.Where(s => s.FlowType == "Basic Flow").ToList();
+            //    var exceptionSteps = allSteps.Where(s => s.FlowType == "Exception Flow").ToList();
+
+            //    // Sinh test case cho Basic Flow
+            //    if (basicSteps.Any())
+            //    {
+            //        var basicTestCase = new TestCase
+            //        {
+            //            UseCase = useCase.Id ?? "Unknown",
+            //            UseCaseName = useCase.Name ?? "Unknown",
+            //            TestName = $"TC-{testCaseCounter:D2}",
+            //            Procedure = basicSteps.Select(s => s.Description ?? "N/A").ToList(),
+            //            ExpectedResults = basicSteps.Select(s => s.ExpectedResult ?? "N/A").ToList(),
+            //            FlowType = "Basic Flow"
+            //        };
+
+            //        _testCases.Add(basicTestCase);
+            //        testCaseCounter++;
+            //        txtThongbao.AppendText($"Đã sinh test case {basicTestCase.TestName} với {basicTestCase.Procedure.Count} bước (Basic Flow).\r\n");
+            //    }
+
+            //    // Sinh test case cho từng bước Exception Flow
+            //    foreach (var step in exceptionSteps)
+            //    {
+            //        if (step.BranchPoint == null)
+            //        {
+            //            txtThongbao.AppendText($"Cảnh báo: Bước '{step.Description ?? "N/A"}' không có BranchPoint, bỏ qua.\r\n");
+            //            continue;
+            //        }
+
+            //        int branchPoint = step.BranchPoint.Value;
+            //        if (branchPoint < 1 || branchPoint > basicSteps.Count)
+            //        {
+            //            txtThongbao.AppendText($"Cảnh báo: BranchPoint không hợp lệ cho bước '{step.Description ?? "N/A"}' (giá trị: {branchPoint}), đặt mặc định thành bước cuối ({basicSteps.Count}).\r\n");
+            //            branchPoint = basicSteps.Count;
+            //        }
+
+            //        // Lấy các bước Basic Flow từ đầu đến BranchPoint
+            //        var baseProcedure = basicSteps.Take(branchPoint).Select(s => s.Description ?? "N/A").ToList();
+            //        var baseExpectedResults = basicSteps.Take(branchPoint).Select(s => s.ExpectedResult ?? "N/A").ToList();
+
+            //        // Thêm bước ngoại lệ vào cuối
+            //        baseProcedure.Add(step.Description ?? "N/A");
+            //        baseExpectedResults.Add(step.ExpectedResult ?? "N/A");
+
+            //        var testCase = new TestCase
+            //        {
+            //            UseCase = useCase.Id ?? "Unknown",
+            //            UseCaseName = useCase.Name ?? "Unknown",
+            //            TestName = $"TC-{testCaseCounter:D2}",
+            //            Procedure = baseProcedure,
+            //            ExpectedResults = baseExpectedResults,
+            //            FlowType = step.FlowType ?? "Exception Flow"
+            //        };
+
+            //        _testCases.Add(testCase);
+            //        testCaseCounter++;
+            //        txtThongbao.AppendText($"Đã sinh test case {testCase.TestName} với {testCase.Procedure.Count} bước ({step.FlowType ?? "Exception Flow"}).\r\n");
+            //    }
+
+            //    if (_testCases.Any())
+            //    {
+            //        SetTestCaseColumns();
+            //        dgvUseCaseDetails.Rows.Clear();
+            //        foreach (var testCase in _testCases)
+            //        {
+            //            string procedureText = string.Join("\n", testCase.Procedure);
+            //            string expectedResultText = string.Join("\n", testCase.ExpectedResults);
+            //            string testCaseType = testCase.FlowType == "Basic Flow" ? "Happy" : "Bad";
+
+            //            dgvUseCaseDetails.Rows.Add(
+            //                testCase.TestName,
+            //                testCase.UseCaseName,
+            //                testCase.FlowType,
+            //                procedureText,
+            //                expectedResultText,
+            //                testCaseType
+            //            );
+            //        }
+            //        txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case!\r\n");
+            //    }
+            //    else
+            //    {
+            //        txtThongbao.AppendText("Không sinh được test case nào!\r\n");
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    txtThongbao.AppendText($"Lỗi khi sinh test case: {ex.Message}\r\n");
+            //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
+            //}
+
 
 
             try
@@ -3506,10 +2578,11 @@ namespace DATN
                     return;
                 }
 
-                if (useCase.Steps == null)
+                if (useCase.Steps == null || !useCase.Steps.Any())
                 {
                     useCase.Steps = new List<StepData>();
                     txtThongbao.AppendText("Cảnh báo: Use Case không có bước nào.\r\n");
+                    return;
                 }
 
                 if (HasCycle(useCase.Steps))
@@ -3518,78 +2591,73 @@ namespace DATN
                     return;
                 }
 
-                var basicSteps = useCase.Steps.Where(s => s.FlowType == "Basic Flow").ToList();
-                var altExceptionSteps = useCase.Steps.Where(s => s.FlowType != "Basic Flow").ToList();
-
-                List<string> basicFlowSteps = new List<string>();
-                List<string> basicFlowExpectedResults = new List<string>();
-                foreach (var step in basicSteps)
-                {
-                    basicFlowSteps.Add(step.Description ?? "N/A");
-                    basicFlowExpectedResults.Add(step.ExpectedResult ?? "N/A");
-                }
-
                 int testCaseCounter = 1;
 
-                if (basicFlowSteps.Any())
+                var allSteps = useCase.Steps.OrderBy(s =>
+                {
+                    var match = Regex.Match(s.Description ?? "", @"(\d+)\.?([a-z]?)");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int stepNum))
+                    {
+                        int subStep = match.Groups[2].Value.Length > 0 ? (int)match.Groups[2].Value[0] - (int)'a' + 1 : 0;
+                        return stepNum * 100 + subStep;
+                    }
+                    return int.MaxValue;
+                }).ToList();
+
+                var basicSteps = allSteps.Where(s => s.FlowType == "Basic Flow").ToList();
+                var exceptionSteps = allSteps.Where(s => s.FlowType == "Exception Flow").ToList();
+
+                if (basicSteps.Any())
                 {
                     var basicTestCase = new TestCase
                     {
                         UseCase = useCase.Id ?? "Unknown",
                         UseCaseName = useCase.Name ?? "Unknown",
                         TestName = $"TC-{testCaseCounter:D2}",
-                        Procedure = new List<string>(basicFlowSteps),
-                        ExpectedResults = new List<string>(basicFlowExpectedResults),
+                        Procedure = basicSteps.Select(s => s.Description ?? "N/A").ToList(),
+                        ExpectedResults = basicSteps.Select(s => s.ExpectedResult ?? "N/A").ToList(),
                         FlowType = "Basic Flow"
                     };
-
-                    if (basicTestCase.Procedure.Count != basicTestCase.ExpectedResults.Count)
-                    {
-                        txtThongbao.AppendText($"Cảnh báo: Test case {basicTestCase.TestName} có số bước ({basicTestCase.Procedure.Count}) không khớp với số kết quả kỳ vọng ({basicTestCase.ExpectedResults.Count}).\r\n");
-                    }
 
                     _testCases.Add(basicTestCase);
                     testCaseCounter++;
                     txtThongbao.AppendText($"Đã sinh test case {basicTestCase.TestName} với {basicTestCase.Procedure.Count} bước (Basic Flow).\r\n");
                 }
 
-                foreach (var step in altExceptionSteps)
+                foreach (var step in exceptionSteps)
                 {
-                    IsStepReachable(step, basicSteps);
-
-                    int branchPoint = step.BranchPoint ?? basicFlowSteps.Count;
-                    if (branchPoint < 1 || branchPoint > basicFlowSteps.Count)
+                    if (step.BranchPoint == null)
                     {
-                        txtThongbao.AppendText($"Cảnh báo: BranchPoint không hợp lệ cho bước '{step.Description ?? "N/A"}', đặt mặc định thành bước cuối ({basicFlowSteps.Count}).\r\n");
-                        branchPoint = basicFlowSteps.Count;
+                        txtThongbao.AppendText($"Cảnh báo: Bước '{step.Description ?? "N/A"}' không có BranchPoint, bỏ qua.\r\n");
+                        continue;
                     }
 
-                    // Chỉ lấy các bước từ đầu đến BranchPoint
-                    List<string> testSteps = basicFlowSteps.Take(branchPoint - 1).ToList();
-                    List<string> testExpectedResults = basicFlowExpectedResults.Take(branchPoint - 1).ToList();
+                    int branchPoint = step.BranchPoint.Value;
+                    if (branchPoint < 1 || branchPoint > basicSteps.Count)
+                    {
+                        txtThongbao.AppendText($"Cảnh báo: BranchPoint không hợp lệ cho bước '{step.Description ?? "N/A"}' (giá trị: {branchPoint}), đặt mặc định thành bước cuối ({basicSteps.Count}).\r\n");
+                        branchPoint = basicSteps.Count;
+                    }
 
-                    // Thêm bước nhánh
-                    testSteps.Add(step.Description ?? "N/A");
-                    testExpectedResults.Add(step.ExpectedResult ?? "N/A");
+                    var baseProcedure = basicSteps.Take(branchPoint).Select(s => s.Description ?? "N/A").ToList();
+                    var baseExpectedResults = basicSteps.Take(branchPoint).Select(s => s.ExpectedResult ?? "N/A").ToList();
+
+                    baseProcedure.Add(step.Description ?? "N/A");
+                    baseExpectedResults.Add(step.ExpectedResult ?? "N/A");
 
                     var testCase = new TestCase
                     {
                         UseCase = useCase.Id ?? "Unknown",
                         UseCaseName = useCase.Name ?? "Unknown",
                         TestName = $"TC-{testCaseCounter:D2}",
-                        Procedure = new List<string>(testSteps),
-                        ExpectedResults = new List<string>(testExpectedResults),
-                        FlowType = step.FlowType ?? "Unknown"
+                        Procedure = baseProcedure,
+                        ExpectedResults = baseExpectedResults,
+                        FlowType = step.FlowType ?? "Exception Flow"
                     };
-
-                    if (testCase.Procedure.Count != testCase.ExpectedResults.Count)
-                    {
-                        txtThongbao.AppendText($"Cảnh báo: Test case {testCase.TestName} có số bước ({testCase.Procedure.Count}) không khớp với số kết quả kỳ vọng ({testCase.ExpectedResults.Count}).\r\n");
-                    }
 
                     _testCases.Add(testCase);
                     testCaseCounter++;
-                    txtThongbao.AppendText($"Đã sinh test case {testCase.TestName} với {testCase.Procedure.Count} bước ({step.FlowType ?? "Unknown"}).\r\n");
+                    txtThongbao.AppendText($"Đã sinh test case {testCase.TestName} với {testCase.Procedure.Count} bước ({step.FlowType ?? "Exception Flow"}).\r\n");
                 }
 
                 if (_testCases.Any())
@@ -3600,6 +2668,7 @@ namespace DATN
                     {
                         string procedureText = string.Join("\n", testCase.Procedure);
                         string expectedResultText = string.Join("\n", testCase.ExpectedResults);
+                        string testCaseType = testCase.FlowType == "Basic Flow" ? "Positive" : "Negative"; // Tính lại khi hiển thị
 
                         dgvUseCaseDetails.Rows.Add(
                             testCase.TestName,
@@ -3607,7 +2676,7 @@ namespace DATN
                             testCase.FlowType,
                             procedureText,
                             expectedResultText,
-                            testCase.FlowType == "Basic Flow" ? "Happy" : "Bad"
+                            testCaseType
                         );
                     }
                     txtThongbao.AppendText($"Đã sinh ra {_testCases.Count} test case!\r\n");
@@ -3621,7 +2690,7 @@ namespace DATN
             {
                 txtThongbao.AppendText($"Lỗi khi sinh test case: {ex.Message}\r\n");
                 txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
-            } 
+            }
         }
 
 
@@ -3715,7 +2784,7 @@ namespace DATN
                     // Dữ liệu
                     foreach (var tc in testCases)
                     {
-                        string testCaseType = tc.FlowType == "Basic Flow" ? "Tốt" : "Xấu";
+                        string testCaseType = tc.FlowType == "Basic Flow" ? "Positive" : "Negative"; // Sửa từ "Tốt"/"Xấu" thành "Positive"/"Negative"
                         Row row = new Row();
                         row.Append(
                             new Cell() { CellValue = new CellValue(tc.UseCase), DataType = CellValues.String },
@@ -3741,7 +2810,7 @@ namespace DATN
 
                 foreach (var tc in testCases)
                 {
-                    string testCaseType = tc.FlowType == "Basic Flow" ? "Tốt" : "Xấu";
+                    string testCaseType = tc.FlowType == "Basic Flow" ? "Positive" : "Negative"; // Sửa từ "Tốt"/"Xấu" thành "Positive"/"Negative"
                     html.AppendLine("<tr>");
                     html.AppendLine($"<td>{tc.UseCase}</td>");
                     html.AppendLine($"<td>{tc.UseCaseName}</td>");
@@ -3763,7 +2832,7 @@ namespace DATN
                 text.AppendLine(new string('=', 50));
                 foreach (var tc in testCases)
                 {
-                    string testCaseType = tc.FlowType == "Basic Flow" ? "Tốt" : "Xấu";
+                    string testCaseType = tc.FlowType == "Basic Flow" ? "Positive" : "Negative"; // Sửa từ "Tốt"/"Xấu" thành "Positive"/"Negative"
                     text.AppendLine($"Use Case: {tc.UseCase}");
                     text.AppendLine($"Use Case Name: {tc.UseCaseName}");
                     text.AppendLine($"Test Case: {tc.TestName}");
@@ -3782,23 +2851,7 @@ namespace DATN
         //sự kiện cho nút làm mới
         private void btnReset_Click(object sender, EventArgs e)
         {
-            //chạy
-            //txtInputTM.Clear();
-            //txtOutputTM.Clear();
-            //txtThongbao.Clear();
-            //_testCases.Clear();
-            //_selectedFilePath = null;
-            //selectedUseCaseId = null;
-            //comboboxUC.Items.Clear(); // Xóa danh sách Use Case
-            //comboboxUC.SelectedIndex = -1; // Đặt lại ComboBox
-            //radioTextIn.Checked = false;
-            //radioXMLIn.Checked = true; // Mặc định chọn XML
-            //radioXMIIn.Checked = false;
-            //radioWordOut.Checked = true; // Mặc định chọn Word
-            //radioExcelOut.Checked = false;
-            //radioHTMLOut.Checked = false;
-            //txtThongbao.AppendText("Đã làm mới các lựa chọn.\r\n");
-
+            
             txtInputTM.Clear();
             txtOutputTM.Clear();
             txtThongbao.Clear();
@@ -3829,6 +2882,7 @@ namespace DATN
         {
             MessageBox.Show("Hướng dẫn sử dụng:\n1. Chọn định dạng đầu vào (XML, XMI, hoặc Text).\n2. Chọn file đặc tả.\n3. Chọn Use Case từ danh sách (nếu là XML hoặc XMI).\n4. Chọn thư mục đầu ra.\n5. Chọn định dạng đầu ra (Word, Excel, HTML).\n6. Nhấn 'Sinh test case' để tạo test case.\n7. Nhấn 'Xuất báo cáo' để lưu báo cáo (nếu cần).");
         }
+
 
         private void btnSua_Click(object sender, EventArgs e)
         {
