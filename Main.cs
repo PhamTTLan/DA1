@@ -355,7 +355,7 @@ namespace DATN
              
 
 
-        //
+        //hàm xử lý file xml, xmi
         private void LoadXmlAndUseCases(string xmlFilePath)
         {
             try
@@ -1981,6 +1981,150 @@ namespace DATN
 
         private void LoadDataGridView(UseCaseData useCase)
         {
+            
+            //cải tiến
+            try
+            {
+                if (!_isDisplayingTestCases)
+                {
+                    SetUseCaseDetailsColumns();
+                    dgvUseCaseDetails.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                    dgvUseCaseDetails.Rows.Clear();
+                    dgvUseCaseDetails.AllowUserToAddRows = false; // Ngăn DataGridView thêm hàng trống
+                }
+
+                int expectedColumnCount = 7;
+                if (dgvUseCaseDetails.Columns.Count != expectedColumnCount)
+                {
+                    txtThongbao.AppendText($"Lỗi: Số cột trong DataGridView ({dgvUseCaseDetails.Columns.Count}) không khớp với số cột mong đợi ({expectedColumnCount}).\r\n");
+                    SetUseCaseDetailsColumns();
+                }
+
+                if (useCase == null || useCase.Steps == null || !useCase.Steps.Any())
+                {
+                    txtThongbao.AppendText("Không có bước nào để hiển thị cho UseCase này.\r\n");
+                    return;
+                }
+
+                txtThongbao.AppendText($"UseCase: {useCase.Name}\r\n");
+                txtThongbao.AppendText($"Số bước: {useCase.Steps.Count}\r\n");
+
+                // Tối ưu hiệu suất bằng SuspendLayout
+                dgvUseCaseDetails.SuspendLayout();
+
+                int stepCounter = 0;
+                Dictionary<int, List<string>> stepExpectedResults = new Dictionary<int, List<string>>();
+                Dictionary<int, string> stepProcedures = new Dictionary<int, string>();
+                Dictionary<int, string> stepPreconditions = new Dictionary<int, string>();
+                Dictionary<int, string> stepPostconditions = new Dictionary<int, string>();
+                Dictionary<int, string> stepFlowTypes = new Dictionary<int, string>();
+                Dictionary<int, string> stepLevels = new Dictionary<int, string>();
+                string lastUseCaseName = null;
+
+                // Duyệt qua tất cả các bước và chỉ thêm các bước hợp lệ
+                for (int i = 0; i < useCase.Steps.Count; i++)
+                {
+                    var step = useCase.Steps[i];
+                    if (string.IsNullOrWhiteSpace(step.Description)) continue; // Bỏ qua bước nếu Description rỗng
+
+                    txtThongbao.AppendText($"Step Debug - Index: {i}, Description: {step.Description}, ExpectedResult: {step.ExpectedResult}\r\n");
+
+                    string displayPreconditions = step.Preconditions ?? "Không có";
+                    string displayPostconditions = step.PostConditions ?? "Không có";
+
+                    if (displayPreconditions == "Không có" && useCase.Preconditions != "Không có")
+                    {
+                        displayPreconditions = useCase.Preconditions;
+                    }
+                    if (displayPostconditions == "Không có" && useCase.Postconditions != "Không có")
+                    {
+                        displayPostconditions = useCase.Postconditions;
+                    }
+
+                    stepCounter++;
+                    stepProcedures[stepCounter] = step.Description;
+                    stepPreconditions[stepCounter] = displayPreconditions;
+                    stepPostconditions[stepCounter] = displayPostconditions;
+                    stepFlowTypes[stepCounter] = step.FlowType ?? "Không xác định";
+                    stepLevels[stepCounter] = step.Level ?? "Không xác định";
+                    stepExpectedResults[stepCounter] = new List<string>();
+
+                    // Thêm ExpectedResult từ chính bước
+                    if (!string.IsNullOrEmpty(step.ExpectedResult) && step.ExpectedResult != "Không có kết quả kỳ vọng")
+                    {
+                        stepExpectedResults[stepCounter].Add(step.ExpectedResult.Trim());
+                    }
+
+                    // Kiểm tra bước SYSTEM tiếp theo để gộp vào ExpectedResult
+                    for (int j = i + 1; j < useCase.Steps.Count; j++)
+                    {
+                        var nextStep = useCase.Steps[j];
+                        bool isNextSystemStep = nextStep.Description?.ToLower().Contains("system") == true ||
+                                               nextStep.Description?.ToLower().Contains("hệ thống") == true ||
+                                               nextStep.Description?.ToLower().Contains("hệ thống hiển thị") == true ||
+                                               nextStep.Description?.ToLower().Contains("system displays") == true;
+
+                        if (isNextSystemStep)
+                        {
+                            string nextStepDescription = nextStep.Description?.Trim();
+                            if (!string.IsNullOrEmpty(nextStepDescription) && nextStepDescription != "Hệ thống xử lý hành động thành công và thực hiện các bước tiếp theo")
+                            {
+                                stepExpectedResults[stepCounter].Add(nextStepDescription);
+                            }
+                            i = j; // Bỏ qua bước SYSTEM đã xử lý
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    lastUseCaseName = step.UseCaseName ?? "Không xác định";
+                }
+
+                // Thêm dữ liệu vào DataGridView, chỉ thêm hàng nếu có Description hợp lệ
+                foreach (var stepNum in stepProcedures.Keys)
+                {
+                    var uniqueExpectedResults = stepExpectedResults[stepNum].Distinct().ToList();
+                    string combinedExpectedResults = uniqueExpectedResults.Any() ? string.Join("\n", uniqueExpectedResults) : "Không có kết quả kỳ vọng";
+
+                    if (!string.IsNullOrWhiteSpace(stepProcedures[stepNum]))
+                    {
+                        dgvUseCaseDetails.Rows.Add(
+                            lastUseCaseName,
+                            stepLevels[stepNum],
+                            stepPreconditions[stepNum],
+                            stepPostconditions[stepNum],
+                            stepFlowTypes[stepNum],
+                            stepProcedures[stepNum],
+                            combinedExpectedResults
+                        );
+                    }
+                }
+
+                // Xóa hàng trống cuối cùng nếu có (nếu DataGridView tự thêm)
+                if (dgvUseCaseDetails.Rows.Count > 0 && string.IsNullOrWhiteSpace(dgvUseCaseDetails.Rows[dgvUseCaseDetails.Rows.Count - 1].Cells[5].Value?.ToString()))
+                {
+                    dgvUseCaseDetails.Rows.RemoveAt(dgvUseCaseDetails.Rows.Count - 1);
+                }
+
+                if (dgvUseCaseDetails.Rows.Count == 0)
+                {
+                    txtThongbao.AppendText("Không có dữ liệu hợp lệ để hiển thị sau khi lọc các hàng trống.\r\n");
+                }
+                else
+                {
+                    txtThongbao.AppendText($"Đã hiển thị {dgvUseCaseDetails.Rows.Count} bước cho UseCase: {useCase.Name}\r\n");
+                }
+
+                // Kết thúc tối ưu hiệu suất
+                dgvUseCaseDetails.ResumeLayout();
+            }
+            catch (Exception ex)
+            {
+                txtThongbao.AppendText($"Lỗi khi hiển thị dữ liệu trong DataGridView: {ex.Message}\r\n");
+                txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
+            }
             //chạy bthg
             //try
             //{
@@ -2241,152 +2385,6 @@ namespace DATN
             //    txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
             //}
 
-
-
-            //cải tiến
-            try
-            {
-                if (!_isDisplayingTestCases)
-                {
-                    SetUseCaseDetailsColumns();
-                    dgvUseCaseDetails.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-                    dgvUseCaseDetails.Rows.Clear();
-                    dgvUseCaseDetails.AllowUserToAddRows = false; // Ngăn DataGridView thêm hàng trống
-                }
-
-                int expectedColumnCount = 7;
-                if (dgvUseCaseDetails.Columns.Count != expectedColumnCount)
-                {
-                    txtThongbao.AppendText($"Lỗi: Số cột trong DataGridView ({dgvUseCaseDetails.Columns.Count}) không khớp với số cột mong đợi ({expectedColumnCount}).\r\n");
-                    SetUseCaseDetailsColumns();
-                }
-
-                if (useCase == null || useCase.Steps == null || !useCase.Steps.Any())
-                {
-                    txtThongbao.AppendText("Không có bước nào để hiển thị cho UseCase này.\r\n");
-                    return;
-                }
-
-                txtThongbao.AppendText($"UseCase: {useCase.Name}\r\n");
-                txtThongbao.AppendText($"Số bước: {useCase.Steps.Count}\r\n");
-
-                // Tối ưu hiệu suất bằng SuspendLayout
-                dgvUseCaseDetails.SuspendLayout();
-
-                int stepCounter = 0;
-                Dictionary<int, List<string>> stepExpectedResults = new Dictionary<int, List<string>>();
-                Dictionary<int, string> stepProcedures = new Dictionary<int, string>();
-                Dictionary<int, string> stepPreconditions = new Dictionary<int, string>();
-                Dictionary<int, string> stepPostconditions = new Dictionary<int, string>();
-                Dictionary<int, string> stepFlowTypes = new Dictionary<int, string>();
-                Dictionary<int, string> stepLevels = new Dictionary<int, string>();
-                string lastUseCaseName = null;
-
-                // Duyệt qua tất cả các bước và chỉ thêm các bước hợp lệ
-                for (int i = 0; i < useCase.Steps.Count; i++)
-                {
-                    var step = useCase.Steps[i];
-                    if (string.IsNullOrWhiteSpace(step.Description)) continue; // Bỏ qua bước nếu Description rỗng
-
-                    txtThongbao.AppendText($"Step Debug - Index: {i}, Description: {step.Description}, ExpectedResult: {step.ExpectedResult}\r\n");
-
-                    string displayPreconditions = step.Preconditions ?? "Không có";
-                    string displayPostconditions = step.PostConditions ?? "Không có";
-
-                    if (displayPreconditions == "Không có" && useCase.Preconditions != "Không có")
-                    {
-                        displayPreconditions = useCase.Preconditions;
-                    }
-                    if (displayPostconditions == "Không có" && useCase.Postconditions != "Không có")
-                    {
-                        displayPostconditions = useCase.Postconditions;
-                    }
-
-                    stepCounter++;
-                    stepProcedures[stepCounter] = step.Description;
-                    stepPreconditions[stepCounter] = displayPreconditions;
-                    stepPostconditions[stepCounter] = displayPostconditions;
-                    stepFlowTypes[stepCounter] = step.FlowType ?? "Không xác định";
-                    stepLevels[stepCounter] = step.Level ?? "Không xác định";
-                    stepExpectedResults[stepCounter] = new List<string>();
-
-                    // Thêm ExpectedResult từ chính bước
-                    if (!string.IsNullOrEmpty(step.ExpectedResult) && step.ExpectedResult != "Không có kết quả kỳ vọng")
-                    {
-                        stepExpectedResults[stepCounter].Add(step.ExpectedResult.Trim());
-                    }
-
-                    // Kiểm tra bước SYSTEM tiếp theo để gộp vào ExpectedResult
-                    for (int j = i + 1; j < useCase.Steps.Count; j++)
-                    {
-                        var nextStep = useCase.Steps[j];
-                        bool isNextSystemStep = nextStep.Description?.ToLower().Contains("system") == true ||
-                                               nextStep.Description?.ToLower().Contains("hệ thống") == true ||
-                                               nextStep.Description?.ToLower().Contains("hệ thống hiển thị") == true ||
-                                               nextStep.Description?.ToLower().Contains("system displays") == true;
-
-                        if (isNextSystemStep)
-                        {
-                            string nextStepDescription = nextStep.Description?.Trim();
-                            if (!string.IsNullOrEmpty(nextStepDescription) && nextStepDescription != "Hệ thống xử lý hành động thành công và thực hiện các bước tiếp theo")
-                            {
-                                stepExpectedResults[stepCounter].Add(nextStepDescription);
-                            }
-                            i = j; // Bỏ qua bước SYSTEM đã xử lý
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    lastUseCaseName = step.UseCaseName ?? "Không xác định";
-                }
-
-                // Thêm dữ liệu vào DataGridView, chỉ thêm hàng nếu có Description hợp lệ
-                foreach (var stepNum in stepProcedures.Keys)
-                {
-                    var uniqueExpectedResults = stepExpectedResults[stepNum].Distinct().ToList();
-                    string combinedExpectedResults = uniqueExpectedResults.Any() ? string.Join("\n", uniqueExpectedResults) : "Không có kết quả kỳ vọng";
-
-                    if (!string.IsNullOrWhiteSpace(stepProcedures[stepNum]))
-                    {
-                        dgvUseCaseDetails.Rows.Add(
-                            lastUseCaseName,
-                            stepLevels[stepNum],
-                            stepPreconditions[stepNum],
-                            stepPostconditions[stepNum],
-                            stepFlowTypes[stepNum],
-                            stepProcedures[stepNum],
-                            combinedExpectedResults
-                        );
-                    }
-                }
-
-                // Xóa hàng trống cuối cùng nếu có (nếu DataGridView tự thêm)
-                if (dgvUseCaseDetails.Rows.Count > 0 && string.IsNullOrWhiteSpace(dgvUseCaseDetails.Rows[dgvUseCaseDetails.Rows.Count - 1].Cells[5].Value?.ToString()))
-                {
-                    dgvUseCaseDetails.Rows.RemoveAt(dgvUseCaseDetails.Rows.Count - 1);
-                }
-
-                if (dgvUseCaseDetails.Rows.Count == 0)
-                {
-                    txtThongbao.AppendText("Không có dữ liệu hợp lệ để hiển thị sau khi lọc các hàng trống.\r\n");
-                }
-                else
-                {
-                    txtThongbao.AppendText($"Đã hiển thị {dgvUseCaseDetails.Rows.Count} bước cho UseCase: {useCase.Name}\r\n");
-                }
-
-                // Kết thúc tối ưu hiệu suất
-                dgvUseCaseDetails.ResumeLayout();
-            }
-            catch (Exception ex)
-            {
-                txtThongbao.AppendText($"Lỗi khi hiển thị dữ liệu trong DataGridView: {ex.Message}\r\n");
-                txtThongbao.AppendText($"StackTrace: {ex.StackTrace}\r\n");
-            }
-
         }
 
 
@@ -2419,7 +2417,7 @@ namespace DATN
         // Hàm sinh test case từ file XML và lưu vào danh sách _testCases
         private void GenerateTestCases()
         { 
-            
+
             try
             {
                 _testCases.Clear();
